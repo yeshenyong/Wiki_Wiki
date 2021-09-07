@@ -63,3 +63,43 @@ public:
         return myStr;
     }
 };
+
+
+// second try
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        /*---method 1:排序 + 模拟---*/
+        /*
+        int length = strs.size();
+        vector<string> cnt = strs;
+        unordered_map<string, int> mmap;
+        for (int i=0;i < length;i++) {
+            sort(cnt[i].begin(), cnt[i].end());
+        }
+        vector<vector<string>> result;
+        for (int i=0;i < length;i++) {
+            if (mmap.find(cnt[i]) == mmap.end()) {
+                vector<string> tmp(1, strs[i]);
+                result.emplace_back(tmp);
+                mmap.insert(make_pair(cnt[i], result.size()-1));
+            } else {
+                result[mmap[cnt[i]]].emplace_back(strs[i]);
+            }
+        }
+        return result;
+        */
+        /*---method 2:计数压缩替代排序 + hashtable---*/
+        unordered_map<string, vector<string>> mmap;
+        for (auto &it : strs) {
+            string ss = string(26, '\0');
+            for (auto & c : it) ss[c-'a']++;
+            mmap[ss].emplace_back(it);
+        }
+        vector<vector<string>> result;
+        for (auto &it : mmap) {
+            result.emplace_back(it.second);
+        }
+        return result;
+    }
+};
