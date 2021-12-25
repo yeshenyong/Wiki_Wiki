@@ -447,6 +447,82 @@ b
 
 
 
+**index() 获得指定元素首次出现的索引位置。语法是: index(value, [start, [end]])**
+
+start、end 指定了搜索范围
+
+
+
+**count() 获得指定元素在列表总出现次数**
+
+
+
+**成员资格判断**
+
+in 判断
+
+
+
+**切片操作**
+
+slice操作可以让我们快速的提取子列表或修改。
+
+标准格式为：[起始偏移量 start:终止偏移量 end:[步长 step]]
+
+步长省略时顺便可以省略第二个冒号
+
+
+
+列表的遍历
+
+```python
+for obj in listObj:
+	print(obj)
+```
+
+
+
+**列表排序**
+
+修改原列表，不建新列表的排序
+
+```python
+a.sort() # 默认升序排序
+
+a.sort(reverse=True) # 降序排列
+
+import random
+random.shuffle(a)
+
+```
+
+
+
+建新列表排序
+
+sorted() 排序
+
+```python
+a = sorted(a) # 默认升序
+a = sorted(a, reverse=True)
+```
+
+
+
+**reversed() 返回迭代器**
+
+时间换空间
+
+reversed() 不对原列表做任何修改，知识返回一个逆序排列的迭代器对象
+
+
+
+**max、min、sum**
+
+
+
+
+
 Python列表大小可变，根据需要随时增加或缩小
 
 ​	字符串和列表都是序列类型，一个字符串是一个字符序列，一个列表是任何元素的序列。所有二者用法几乎一模一样.
@@ -457,9 +533,228 @@ Python列表大小可变，根据需要随时增加或缩小
 
 #### 元组
 
+tuple
+
+列表属于可变序列，可以任意修改列表中元素。
+
+元组属于不可变序列，不能修改元组中的元素。
+
+元祖没有增删改元素方法。
+
+支持一下操作:
+
+- 索引访问
+- 切片操作
+- 连接操作
+- 成员关系操作
+- 比较运算操作
+- 计数：元素长度、最大值最小值
+
+
+
+**tuple创建**
+
+```python
+tuplea = ()
+
+tuplea = tuple(元素对象)
+
+tuplea = (20, ) # 一定逗号 
+```
+
+
+
+切片完还是它本身
+
+列表和元组本质区别不能修改
+
+​	**列表关于排序的方法list.sorted() 是修改原列表，元组没有该方法。如果要对元组排序，只能使用内置函数sorted(tupleObj)，并生成新的列表对象**
+
+
+
+​	**zip(列表1，列表2，...) 将多个对象对应位置的元素组成为元组，并返回这个zip对象**
+
+```python
+a = [10, 20, 30]
+b = [40, 50, 60]
+c = [70, 80, 90]
+d = zip(a, b, c)
+list(d)
+[(10, 40, 70), (20, 50, 80), (30, 60, 90)]
+```
+
+
+
+生成器推导式创建元祖
+
+s = (x*2 for x  in range(5))
+
+​	我们通过生成器对象，转换成列表或者元祖。也可以使用生成器对象的____next____() 方法来进行遍历，或者直接作为迭代器对象来使用。不管什么方式使用，**元素访问结束后，如果需要重新访问其中的元素，必须重新创建该生成器对象。**
+
+
+
+```python
+s = (x*2 for x  in range(5))
+s
+tuple(s)
+list(s) # 只能放问一次元素，第二次就为空。需要再生成一次
+s
+```
+
+
+
+```python
+s = (x*2 for x in range(5))
+s.__next__()
+s.__next__()
+```
+
+
+
+元组总结
+
+- 元组的核心特点是：不可变序列
+- 元组的访问和处理速度比列表快
+- 与整数和字符串一样，元组可以作为字典的键，列表则永远不能做为字典的键使用
+
 
 
 #### 字典
+
+字典是“键值对” 的无序可变序列
+
+可以通过{}、dict() 来创建字典对象
+
+列表、字典、集合这些可变对象不能作为键，并键不可重复
+
+
+
+##### **通过zip() 创建字典对象**
+
+```python
+k = ['name', 'age', 'job']
+v = ['gaoqi', 18, 'teacher']
+d = dict(zip(k, v))
+d
+id2word = dict(zip(word2id.values(), word2id.keys()))
+```
+
+```python
+a = dict([("name", "gaoqi"), ("age", 18)])
+>>> a
+{'name': 'gaoqi', 'age': 18}
+```
+
+##### fromkeys
+
+通过fromkeys 创建值为空的字典
+
+```python
+a = dict.fromkyes(['name', 'age', 'job'])
+>>> a
+{'name':None, 'age':None, 'job':None}
+```
+
+
+
+​	通过get() 方法获得"值"。推荐使用，优点是：指定键不存在，返回None；也可以设定指定键不存在时默认返回的对象。推荐使用get() 获取"值对象"
+
+```python
+a.get('name')
+a.get('sex', '一個男人')
+a.get('name', '不存在')
+```
+
+
+
+列出所有键值对
+
+a.items()
+
+遍历
+
+```python
+for k, v in a.items():
+	print k
+	print v
+```
+
+
+
+列出所有的键，列出所有的值
+
+```python
+a.keys()
+# put in list
+b.values()
+# put in list
+```
+
+
+
+**键值对的个数**
+
+len()
+
+
+
+检测一个"键"是否在字典中
+
+```python
+"name" in a
+
+True
+```
+
+
+
+**添加、修改、删除**
+
+添加
+
+a['address']  = 123
+
+
+
+​	update() 将新字典中所有键值对全部添加到旧字典对象上。如果key有重复，则直接覆盖。
+
+```python
+a = {'name':'yeshenyong'}
+b = {'name':'hazayan'}
+a.update(b)
+>>> a
+{'name', 'hazayan'}
+```
+
+删除
+
+del() 方法、clear() 删除所有键值对、pop() 删除指定键值对并返回对应“值对象”
+
+```python
+a = {'name':'gaoqi', 'age':18, 'job':nono}
+del(a['name'])
+{'age':18, 'job':nono}
+b = a.pop('age')
+>>> b
+18
+```
+
+
+
+**popitem()**
+
+​	随机删除和返回该键值对。字典是“无需可变序列”，因此没有第一个元素、最后一个元素的概念；popitem 弹出随机的项，因为字典没有“最后的元素”或者其他有关顺序的概念。若想一个个移除并处理项，这个方法很有效
+
+```python
+a = {'name':'gaoqi', 'age':18, 'job':nono}
+a.popitem()
+('job', 'nono')
+a
+a.popitem()
+('age', 18)
+a.popitem()
+('name', 'gaoqi')
+```
 
 
 
