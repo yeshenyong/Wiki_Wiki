@@ -585,6 +585,15 @@ list(d)
 
 
 
+序列解包
+
+```python
+x, y, z = (20, 30, 10)
+[a, b, c] = [10, 20, 30]
+```
+
+
+
 生成器推导式创建元祖
 
 s = (x*2 for x  in range(5))
@@ -758,5 +767,66 @@ a.popitem()
 
 
 
+字典序列解包
+
+```python
+s = {'name':'gaoqi','age':18,'job':'teacher'}
+name, age, job = s # 默认对键进行操作
+>>> name
+'name'
+name. age, job = s.items() # 对键值对进行操作
+>>> name
+('name', 'gaoqi')
+name, age, job = s.values() # 对值进行操作
+>>> name
+'gaoqi'
+```
+
+
+
+字典核心底层原理
+
+哈希表bucket
+
+总结：
+
+1. 键必须可hash
+   1. 数字、字符串、元组都是可散列的
+   2. 自定义对象需要支持下面三点
+      1. 支持hash() 函数
+      2. 支持通过____eq____() 方法检测相等性
+      3. 若 a == b 为真，则hash(a) == hash(b) 也为真
+2. 字典在内存中开销巨大，典型的空间换时间
+3. 键查询速度很快
+4. 往字典里面添加新建可能导致扩容，导致hash表中键的次序变化
+
+
+
+
+
+
+
 #### 集合
 
+本质上就是字典
+
+无值的字典
+
+```python
+a = {1, 3, 'sxt'}
+b = {'he', 'it', 'sxt'}
+a | b
+a & b
+a - b
+a.union(b)
+a.intersection(b)
+a.differencce(b)
+```
+
+
+
+赋值语句不可出现在if-else 中
+
+三元条件运算符
+
+print(num if int(num) < 10 else “数字太大")
