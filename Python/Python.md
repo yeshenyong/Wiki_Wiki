@@ -638,6 +638,17 @@ s.__next__()
 
 
 
+```python
+for x in d.values():
+	print x
+for x in d.keys():
+	print x
+for x, y in d.items():
+	print x, y
+```
+
+
+
 ##### **通过zip() 创建字典对象**
 
 ```python
