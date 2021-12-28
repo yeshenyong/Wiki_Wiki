@@ -841,3 +841,62 @@ a.differencce(b)
 三元条件运算符
 
 print(num if int(num) < 10 else “数字太大")
+
+
+
+### 优化手段
+
+for 循环尽量提取局部变量，让寄存器记住
+
+其他优化手段：
+
+- 连接多个字符串，使用join() 而不使用+
+- 列表进行元素插入和删除，尽量在列表尾部操作
+
+
+
+**使用zip() 迭代**
+
+多个列表、元组并行遍历，并在最短的遍历完停止
+
+
+
+### 推导式创建序列
+
+
+
+避免冗长代码
+
+
+
+#### 列表推导式
+
+```python
+[x for x in range(1, 5)]
+[x*2 for x in range(1, 20) if x%5==0]
+[(row, col) for row in range(1, 10) for col in range(1, 10)]
+```
+
+
+
+#### 字典推导式
+
+```python
+my_text = 'i love you, i love sxt, ilove gaoqi'
+char_count = {c:my_text.count(c) for c in my_text}
+print(char_count)
+```
+
+
+
+#### 集合推导式
+
+```python
+{x for x in nrage(1, 100) if x%9 == 0}
+```
+
+
+
+#### 生成器推导式（生成元组）
+
+​	元组没有推导式，只产生一个生成器对象，一个生成器智能云算一次。第一次迭代可以得到数据，第二次迭代发现数据已经没有了。
