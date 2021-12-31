@@ -927,3 +927,14 @@ return 返回值要点：
 - 如果函数体包含return 语句，则结束函数执行返回值
 - 如果函数体不包含return 语句，则返回None值
 - 要返回多个返回值，使用列表，元组，字典，集合将多个值“存起来”即可
+
+
+
+打印局部值和全局值
+
+```python
+def one():
+	print(locals())
+	print(globals())
+```
+
