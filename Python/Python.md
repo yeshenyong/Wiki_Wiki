@@ -1,6 +1,25 @@
 # Python
 
+Python 是一门动态语言
 
+Python 支持面向过程、面向对象、函数式编程等
+
+继承多态封装
+
+### 面向过程思维
+
+执行者思维
+
+### 面向对象思维
+
+设计者思维
+
+- 封装
+  - 隐藏对象的属性和实现细节，只对外提供必要的方法。相当于将“细节封装起来”，只对外暴露“相关调用方法”（私有属性、私有方法的形式封装，没有严格的语法级别“访问符”）
+- 继承
+  - 继承可以让子类具有父类特性，提高代码的重用性
+- 多态
+  - 多态指的是同一个方法调用由于对象不同会产生不同的行为。
 
 ### 标识符命名规则
 
@@ -936,5 +955,546 @@ return 返回值要点：
 def one():
 	print(locals())
 	print(globals())
+```
+
+
+
+#### Python 传参
+
+
+
+**传递可变对象的时候，为引用传递（列表、字典、集合）**
+
+**传递不可变对象的时候，也是引用传递，不过由于不可变对象无法修改，系统会新建一个对象（int、float、字符串、元组、布尔值）**
+
+
+
+位置参数
+
+默认值参数
+
+命名参数
+
+```python
+def test(a, b, c=10):
+	print(test)
+test(10, 8, 10)
+test(10, 8)
+test(b = 10, c = 20, a = 9)
+```
+
+
+
+##### 可变参数
+
+可变参数指的是：可变数量的参数。分两种情况
+
+1. *param（一个星号），将多个参数收集到一个“元组“ 对象中
+2. **param（两个星号），将多个参数收集到一个”字典“对象中
+
+```python
+>>> def f1(a, b, *c):
+...   print(a, b, c)
+...
+>>> f1(10, 9, 12,121,1221)
+10 9 (12, 121, 1221)
+>>> def f2(a, b,**c):
+...   print(a, b,c)
+...
+>>> f2(10, 12, name='ye', age=18)
+10 12 {'name': 'ye', 'age': 18}
+```
+
+
+
+强制命名参数
+
+带星号的可变参数后面添加新的参数，必须是强制命名参数
+
+```python
+def f1(*a, b, c):
+	print(a, b, c)
+	
+f1(2, b=3, c=4)
+```
+
+
+
+#### 嵌套函数(内部函数)
+
+嵌套函数：
+
+​	在函数内部定义的函数
+
+嵌套函数定义
+
+```python
+def f1():
+	print("f1 running")
+	def f2():
+		print("f2 running")
+		
+	f2()
+f1()
+```
+
+1. 封装隐藏
+2. 贯彻DRY（don't repeat yourself）
+3. 闭包
+
+
+
+#### nonlocal 关键字
+
+nonlocal 用来声明外部的局部变量
+
+global 	用来声明全局变量
+
+```python
+def f1():
+	print("f1 running")
+    b = 10
+	def f2():
+        nonlocal b
+        print(b)
+        b=20
+        print(b)
+		print("f2 running")
+		
+	f2()
+f1()
+```
+
+
+
+
+
+### 浅拷贝和深拷贝
+
+
+
+内置函数：copy（浅拷贝）、deepcopy（深拷贝）
+
+浅拷贝：不拷贝子对象的内容，只是拷贝子对象的引用
+
+深拷贝：会连值对象的内存也全部拷贝一份，对子对象的修改不会影响源对象
+
+
+
+浅拷贝.py
+
+```python
+>>> import copy
+>>> a = [10, 20, [5, 6]]
+>>> b = copy.copy(a)
+>>> print("a:", a)
+a: [10, 20, [5, 6]]
+>>> print("b:", b)
+b: [10, 20, [5, 6]]
+>>> b.append(30)
+>>> b[2].append(7)
+>>> print("浅拷贝")
+浅拷贝
+>>> print("a:", a)
+a: [10, 20, [5, 6, 7]]
+>>> print("b:", b)
+b: [10, 20, [5, 6, 7], 30]
+```
+
+深拷贝.py
+
+```python
+>>> import copy
+>>> a = [10, 20, [5, 6]]
+>>> b = copy.deepcopy(a)
+>>> print("a:", a)
+a: [10, 20, [5, 6]]
+>>> print("b:", b)
+b: [10, 20, [5, 6]]
+>>> b.append(30)
+>>> b[2].append(7)
+>>> print("深拷贝")
+深拷贝
+>>> print("a:", a)
+a: [10, 20, [5, 6]]
+>>> print("b:", b)
+b: [10, 20, [5, 6, 7], 30]
+```
+
+
+
+传递不可变对象时。不可变对象里面包含的子对象是可变的。则方法内修改这个可变对象，原对象也发生变化
+
+```python
+>>> a = (10, 20, [5,6])
+>>> print("a:", id(a))
+a: 2043885258456
+>>> def test01(m):
+...   print("m:", id(m))
+...   m[2][0] = 888
+...   print(m)
+...   print("m:", id(m))
+...
+>>> test01(a)
+m: 2043885258456
+(10, 20, [888, 6])
+m: 2043885258456
+>>> print(a)
+(10, 20, [888, 6])
+```
+
+
+
+
+
+### lambda 表达式
+
+声明匿名函数
+
+```python
+f = lambda a,b,c:a+b+c
+print(f)
+print(f(2,3,4))
+g = [lambda a:a*2, lambda b:b*3, lambda c:c*4]
+print(g[0](6), g[1](7), g[2](8))
+```
+
+​	
+
+#### eval() 函数
+
+将字符串str当成有效的表达式来求值并返回计算结果
+
+语法：eval(source[, globals[, locals]]) -> value
+
+参数：
+
+- source：一个Python表达式或函数compile() 返回的代码对象
+- globals：可选。必须是dictionary
+- locals：可选。任意映射对象
+
+动态语言
+
+​	静态语言不可能有eval类似的函数，EVAL是动态语言的东西，可以使用LUA脚本来实现
+
+```python
+s = "print('abcde')"
+eval(s)
+
+a = 10
+b = 20
+c = eval("a+b")
+print(c)
+
+dict1 = dict(a=100, b=200)
+d = eval("a+b", dict1)
+print(d)
+```
+
+
+
+
+
+### LEGB 规则
+
+Python查找名称时，是按照LEGB 规则查找的：local -> Enclosed -> global -> build in
+
+Local 指的是函数或者类的方法内部
+
+Enclosed 指的是嵌套函数
+
+Global 指的是模块中的全局变量
+
+Built in 指的是Python为自己保留的特殊名称
+
+
+
+
+
+### 构造函数
+
+____new___ 方法用于创建对象，但我们一般无需重定义
+
+____init___ 方法初始化对象
+
+
+
+### @property 装饰器
+
+@property 可以将一个方法的调用方式变成”属性调用“
+
+```python
+class Emploee:
+	@property
+	def salary(self):
+		print("salary run...")
+		return 1000
+		
+e1 = Emploee()
+print(e1.salary)
+```
+
+
+
+#### 属性私有化
+
+```python
+class Emploee:
+	def __init__(self, name, salary):
+		self.__name = name
+		self.__salary = salary
+emp1 = Emploee("ye", 1000)
+emp1.salary=-2000
+
+
+class Emploee:
+	@property
+	def salary(self):
+		return self.__salary
+    @salary.setter
+    def salary(self, salary):
+        self.__salary = salary
+		
+e1 = Emploee()
+print(e1.salary)
+e1.salary = -2000
+print(e1.salary)
+```
+
+
+
+### 继承与重写
+
+Python支持多重继承，一个子类可以继承多个父类
+
+
+
+#### 访问私有成员
+
+如果在类定义中没有指定父类，则默认父类是object类。也就是说，object是所有类的父类，里面定义了一些所有类共有的默认实现，比如：____new____()
+
+```python
+class Persion():
+	pass
+class Student(Person):
+	pass
+
+class Persion():
+	def __init(self, name, age):
+        self.name = name
+        self.age = age
+
+class Student(Person):
+	def __init__(self, name, age, score):
+        Person.__init__(self, name, age) # 必须显示的调用父类的构造化方法，不然解释器不会去调用
+        self.score = score
+
+
+#Student-> Person ->object 类的继承关系
+print(Student.mro())
+
+s = student("ye", 19, 81)
+print(dir(s))
+
+# 访问私有成员
+print(s._Person__age)
+
+class person():
+    def __init__(self, age, name):
+        self.__age = age
+        self.name = name
+
+
+class people(person):
+    def __init__(self, age, name, score):
+        person.__init__(self, age, name)
+        self.score = score
+
+
+s = people(18, "ye", 81)
+print(dir(s))
+print(s._person__age)
+```
+
+
+
+类成员的继承和重写
+
+1. 成员继承：子类继承了父类除构造方法之外的所有成员。
+2. 方法重写：子类可以重新定义父类中的方法，这样就会覆盖父类的方法，也称为“重写”
+
+
+
+#### mro() 函数
+
+通过类的方法mro() 或者类的属性____mro____ 可以输出这个类的继承层次结构
+
+```python
+class A:pass
+class B(A):pass
+class C(B):pass
+```
+
+
+
+### object 根类
+
+object 类是所有类的父类，因此所有类都有object 类的属性和方法。显然有必要深入研究一下object 类的结构。对于我们继续学习Python 很有好处。
+
+**dir() 查看对象属性**
+
+为了深入学习对象，我们先学习内置函数dir()，他可以让我们方便查看对象的所有属性。
+
+**重写____str____() 方法**
+
+object 有一个____str____() 方法，用于返回一个对于“对象的描述”，对应于内置函数str() 经常用于print() 方法，帮助我们查看对象的信息。____str____() 可以重写。
+
+
+
+```python
+class Person:
+	def __init__(self, name):
+		self.name = name
+	def __str__(self):
+		return "名字是：{0}".format(self.name)
+p = Person("ye")
+print(p) # 名字是：ye （如果不加，显示Person.object）
+```
+
+
+
+### 多重继承
+
+​	Python 支持多重继承，一个子类可以有多个“直接父类”。这样，就具备了“多个父类”的特点。但是由于，这样会被“类的整体层次”搞得异常复杂，尽量避免使用。
+
+```python
+class A:pass
+class B:pass
+class C(B, A):pass
+```
+
+极有可能变成网状结构
+
+
+
+Python支持多继承，如果父类中有相同名字的方法，在子类没有指定父类名时，解释器将“从左到右” 按顺序搜索。
+
+MRO（method resolution order）：方法解析顺序。
+
+
+
+### super()
+
+通过super（）获得父类定义
+
+在子类中，如果想要获得父类的方法时，我们可以通过super（）来做。super（）代表父类的定义，不是父类对象
+
+```python
+class A:
+    def say(self):
+        print("A recalled!!!")
+
+class C:
+    def say(self):
+        print("C recalled!!!")
+
+class B(C, A):
+    def say(self):
+        #A.say(self)
+        super().say()
+        print("B recalled!!!")
+
+b = B()
+```
+
+
+
+### 多态
+
+指的是同一个方法调用由于对象不同可能产生不同的行为。
+
+1. 多态是方法的多态，属性没有多态
+2. 多态的存在有2个必要条件：继承、方法重写
+
+```python
+class man():
+    pass
+
+class Chinese(man):
+    def eat(self):
+        print("chinese use chopsticks!!")
+class English(man):
+    def eat(self):
+        print("english use knives!!!")
+
+def manEat(m):
+    if isinstance(m, man):
+        m.eat()
+    else:
+        print("不能吃饭")
+
+manEat(English())
+```
+
+
+
+#### 特殊方法和运算符重载
+
+Python 的运算符实际上是通过**调用对象的特殊方法**实现的。
+
+| 运算符    | 特殊方法                            | 说明       |
+| --------- | ----------------------------------- | ---------- |
+| 运算符+   | ____add____                         | 加法       |
+| 运算符-   | ____sub____                         | 减法       |
+| <, <=, == | ____lt____, ____le____, ____eq____  | 比较运算符 |
+| >, >= ,!= | ____gt____,____ge____,____ne____    | 比较运算符 |
+| \|, ^, &  | ____or____,____xor____, ____and____ | 逻辑       |
+
+常见的特殊方法统计如下
+
+| 方法                       | 说明       | 例子           |
+| -------------------------- | ---------- | -------------- |
+| ____init____               | 构造方法   | 对象创建       |
+| ____del____                | 析构方法   | 对象回收       |
+| ____repr____， ____str____ | 打印，转换 | print(a)       |
+| ____call____               | 函数调用   | a()            |
+| ____getattr____            | 点号运算   | a.xxx          |
+| ____setattr____            | 属性赋值   | a.xxx = value  |
+| ____getitem____            | 索引运算   | a[key]         |
+| ____setitem____            | 索引赋值   | a[key] = value |
+| ____len____                | 长度       | lena(a)        |
+
+
+
+我们可以重写上面的特殊方法，即实现了“运算符的重载”
+
+```python
+class person:
+    def __init__(self, name):
+        self.name = name
+
+    def __add__(self, other):
+        if isinstance(other, person):
+            return "{0} + {1}".format(other.name, self.name)
+        else:
+            return "error"
+
+    def __mul__(self, other):
+        if isinstance(other, int):
+            return other * self.name
+        else:
+            return "error"
+
+    def __rmul__(self, other):
+        if isinstance(other, int):
+            return other * self.name
+        else:
+            return "error"
+
+
+p = person("ye")
+print(p + p)
+print(p * 2)
+print(2 * p)
 ```
 

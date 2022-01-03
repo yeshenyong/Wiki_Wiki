@@ -31,7 +31,7 @@ docker rmi image_name:tag
 #### 镜像生成容器
 
 ```bash
-docker run --net=host  -d -t --name alps_service_new2  reg.docker.alibaba-inc.com/hippo/hippo_alios7u2_base:1.8
+docker run --net=host  -d -t --name tensorflow  tensorflow/tensorflow:latest
 ```
 
 
@@ -39,7 +39,7 @@ docker run --net=host  -d -t --name alps_service_new2  reg.docker.alibaba-inc.co
 -v：映射数据卷
 
 ```
-sudo docker run --net=host  -d -t -v /apsarapangu/disk1/data:/root/graph-learn-caesar/examples/data/  --name graph3  reg.docker.alibaba-inc.com/alps/graphlearn:graphlearn_20210818_v1
+sudo docker run --net=host  -d -t -v /root/examples/data/  --name graph3  tensorflow/tensorflow:latest
 ```
 
 
@@ -141,7 +141,7 @@ TESTDATA="$(pwd)/serving/tensorflow_serving/servables/tensorflow/testdata"
 
 
 ```
-docker run --net=host  -d -t --name alps_service_new2  reg.docker.alibaba-inc.com/hippo/hippo_alios7u2_base:1.8
+docker run --net=host  -d -t --name tensorflow  tensorflow/tensorflow:latest
 ```
 
 
@@ -177,21 +177,21 @@ docker run -t --rm -p 8501:8501 \
 
 ```
 docker run -t --rm -p 8502:8501 \
-    -v "/apsarapangu/disk5/modelName:/models/modelName" \
+    -v "/disk5/modelName:/models/modelName" \
     -e MODEL_NAME=modelName \
     tensorflow/serving:1.12.0 &
 ```
 
 ```
 docker run -t --rm -p 8502:8501 \
-    -v "/apsarapangu/disk5/yeshenyong_job_dir/modelName:/models/modelName" \
+    -v "/disk5/yeshenyong_job_dir/modelName:/models/modelName" \
     -e MODEL_NAME=modelName \
     tensorflow/serving:1.12.0 &
 
 tensorflow_serving_model 
 
 docker run -p 8501:8501 \
-  --mount type=bind,source=/apsarapangu/disk5/modelName/,target=/models/modelName \
+  --mount type=bind,source=/disk5/modelName/,target=/models/modelName \
   -e MODEL_NAME=modelName -t tensorflow/serving:1.12.0
 ```
 
@@ -263,38 +263,8 @@ docker run --name 容器名 -it -v 卷名:容器内绝对路径(挂载点) 镜�
 
 ```
 .git/
-node_modules/
+node_modu/
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-osscmd
-
-```shell
-osscmd get oss://64931/loyoen/zeus_predict/zeus.tar ./zeus.tar --host=oss-cn-hangzhou-zmf.aliyuncs.com --id=AkAIKVfFNztU3ViB --key=XLoVyzfxpiIYhAhBxPZRdjvu1IUXUV
-```
-
-
-
-
-
-
 
 
 

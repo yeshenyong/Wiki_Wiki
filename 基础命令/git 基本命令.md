@@ -170,15 +170,13 @@ git merge ysy_dev
 
 将ysy_dev分支合并到当前分支中
 
-![image-20210625103908182](C:\Users\yeshenyong\AppData\Roaming\Typora\typora-user-images\image-20210625103908182.png)
 
-![image-20210625103955763](C:\Users\yeshenyong\AppData\Roaming\Typora\typora-user-images\image-20210625103955763.png)
 
 
 
 git merge 冲突修改
 
-![image-20210625104310090](C:\Users\yeshenyong\AppData\Roaming\Typora\typora-user-images\image-20210625104310090.png)
+
 
 
 
@@ -530,7 +528,7 @@ error: Your local changes to 'c/environ.c' would be overwritten by merge.  Abort
 ```
 
 > 		这个提示意思就是说更新下来的内容和本地修改的内容有冲突，先提交你改变的内容或者先将你本地修改的内容暂时存起来。
->
+>	
 > 	下面我们就分几步解决处理这个pull冲突问题.
 
 
