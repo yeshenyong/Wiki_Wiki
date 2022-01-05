@@ -1145,6 +1145,48 @@ m: 2043885258456
 
 
 
+#### 对象的浅拷贝和深拷贝
+
+- 变量赋值操作
+- 浅拷贝
+- 深拷贝
+
+
+
+```python
+import copy
+class phone:
+    def __init__(self, cpu, screen):
+        self.cpu = cpu
+        self.screen = screen
+class cpu:
+    pass
+class screen:
+    pass
+c1 = cpu()
+s1 = screen()
+m1 = phone(c1, s1)
+# 赋值
+m2 = m1
+print(m1, m1.cpu, m1.screen)
+print(m2, m2.cpu, m2.screen)
+# 浅拷贝
+m2 = copy.copy(m1)
+print(m1, m1.cpu, m1.screen)
+print(m2, m2.cpu, m2.screen)
+# 深拷贝
+m2 = copy.deepcopy(m1)
+print(m1, m1.cpu, m1.screen)
+print(m2, m2.cpu, m2.screen)
+>>
+<__main__.phone object at 0x000001B0D1124208> <__main__.cpu object at 0x000001B0D1106F88> <__main__.screen object at 0x000001B0D1106FC8>
+<__main__.phone object at 0x000001B0D1124208> <__main__.cpu object at 0x000001B0D1106F88> <__main__.screen object at 0x000001B0D1106FC8>
+<__main__.phone object at 0x000001B0D1124208> <__main__.cpu object at 0x000001B0D1106F88> <__main__.screen object at 0x000001B0D1106FC8>
+<__main__.phone object at 0x000001B0D1124088> <__main__.cpu object at 0x000001B0D1106F88> <__main__.screen object at 0x000001B0D1106FC8>
+<__main__.phone object at 0x000001B0D1124208> <__main__.cpu object at 0x000001B0D1106F88> <__main__.screen object at 0x000001B0D1106FC8>
+<__main__.phone object at 0x000001B0D1124F88> <__main__.cpu object at 0x000001B0D1149748> <__main__.screen object at 0x000001B0D1149708>
+```
+
 
 
 ### lambda 表达式
@@ -1496,5 +1538,63 @@ p = person("ye")
 print(p + p)
 print(p * 2)
 print(2 * p)
+```
+
+
+
+### 特殊属性
+
+```python
+class A:
+    pass
+class B:
+    pass
+class C(B, A):
+    def __init__(self, nn):
+        self.nn = nn
+    def cc(self):
+        print("cc recalled")
+
+classc = C(3)
+print(classc.__dict__)
+print(classc.__class__)
+print(C.__bases__)
+print(C.mro())
+print(A.__subclasses__())
+>>
+{'nn': 3}
+<class '__main__.C'>
+(<class '__main__.B'>, <class '__main__.A'>)
+[<class '__main__.C'>, <class '__main__.B'>, <class '__main__.A'>, <class 'object'>]
+[<class '__main__.C'>]
+```
+
+
+
+### 组合
+
+"is-a"、"has-a"	分别为继承和组合
+
+
+
+### 单例模式
+
+```python
+import threading
+class MySingleton:
+    _instance_lock = threading.Lock()
+
+    def __init__(self):
+        pass
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(MySingleton, "_instance"):
+            with MySingleton._instance_lock:
+                if not hasattr(MySingleton, "_instance"):
+                    MySingleton._instance = object.__new__(cls)
+        return MySingleton._instance
+obj1 = MySingleton()
+obj2 = MySingleton()
+print(obj1)
+print(obj2
 ```
 
