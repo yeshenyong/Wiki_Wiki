@@ -1,4 +1,4 @@
-# Python
+Python
 
 Python 是一门动态语言
 
@@ -1596,5 +1596,116 @@ obj1 = MySingleton()
 obj2 = MySingleton()
 print(obj1)
 print(obj2
+```
+
+
+
+### ____all____ 的使用
+
+Python3环境下不提倡使用
+
+Python2经常
+
+`MyMath.py`
+
+```python
+__all__ = ['add']
+def add(a, b):
+	return a + b
+def sub(a, b):
+    return a - b
+```
+
+```python
+from MyMath import *
+# * 代表__all__中所有声明方法, 若没声明__all__, 则默认所有
+```
+
+
+
+### 包
+
+- 概念
+
+包是一个分层次的文件目录结构，它定义了一个由模块及子包和子包下的子包等组成的Python 的应用环境，包中要包含一个______init______.py模块
+
+也可以理解为文件夹，前提，文件中包含一个______init______.py
+
+作用
+
+- 将模块归类，方便整理
+- 防止模块名冲突
+
+
+
+- 新的模块名
+
+包名.模块名
+
+
+
+- 包中模块的导入方式
+
+import package1.module1
+
+or
+
+from package1 import module1
+
+
+
+```python
+import package1.MyMath
+from package1.MyMath import *
+```
+
+
+
+#### ______init______.py
+
+______init______.py 的作用
+
+- 类中的______init____ __初始化方法
+
+- 包中的______init______.py 初始化模块
+
+
+
+> 首次使用包中的模块时，______init______.py 模块会被执行一次
+
+
+
+**__init__.py 中可以存放什么？**
+
+
+
+可以存放同普通模块一样的代码
+
+- 变量、类、函数... 都是OK的（但是不这样做）
+
+一般会写一些辅助的代码，让你更方便的使用模块
+
+```python
+# 一定意义上的简化
+# __init__.py
+import MyMath
+```
+
+```python
+# test.py
+import package1 # => 等同于import package1.MyMath
+```
+
+
+
+```python
+# 一定意义上的简化
+# __init__.py
+from MyMath import *
+```
+
+```python
+# test.py
+from package1 import * # => 等同于from package1.MyMath import *
 ```
 
