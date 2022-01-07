@@ -1,4 +1,16 @@
-# vim功法——成神法
+# vim 功法——成神法
+
+
+
+> 如果你想直接武装你的vim，省去快捷键和插件作用一蹴而就，那么直接看文末复制粘贴。
+
+> 如果你想慢慢斟酌，变成你的东西，也可以慢慢看下去
+
+
+
+一开始我也想直接复制别人的直接用，结果那个博主配置文件全是自己的名字广告，太恶心了，对用户一点都不友好，然后就自己慢慢研究了。
+
+首先声明，此文无广告，全是github 上优秀开源`vim` 插件摘录使用
 
 
 
@@ -456,4 +468,42 @@ https://coolshell.cn/articles/5426.html
 
 
 
-### 扩展
+### 全部
+
+**步骤一**
+
+```sh
+wget https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+```
+
+并把它放到`~/.vim/autoload/` 里（Vim用户）
+
+把plug.vim放到正确的位置之后，你就可以开始安装插件了。在你的vim配置文件中，写下这两行：
+
+Vim用户：
+
+```sh
+call plug#begin('~/.vim/plugged')
+
+call plug#end()
+```
+
+**步骤二**
+
+`~/.vimrc` 加入下面语句
+
+```
+call plug#begin('~/.vim/plugged')
+Plug 'preservim/tagbar'
+Plug 'theniceboy/vim-deus'
+Plug 'preservim/nerdtree'
+Plug 'vim-scripts/AutoComplPop'
+Plug 'frazrepo/vim-rainbow'
+Plug 'preservim/nerdcommenter'
+Plug 'airblade/vim-gitgutter'
+call plug#end()
+```
+
+并退出重进（这样比较简单）
+
+然后输入 `:PlugInstall` 等待安装好就行了
