@@ -1,4 +1,4 @@
-Python
+# Python
 
 Python 是一门动态语言
 
@@ -1237,6 +1237,198 @@ print(d)
 
 
 
+### 异常处理
+
+- 概念
+
+​		异常就是不正常，当Python检测到一个错误时，解释器就无法继续执行下去了，反而出现了一些错误的提示，这就是所谓的异常
+
+
+
+​	正常解决一堆 `if-else ` 覆盖，代码逻辑复杂，业务重心偏移
+
+解决方法最好：异常处理方案（目的使代码编程更简单）
+
+```python
+try:
+	可能出现问题的代码
+except:
+	如果出现问题，会执行该代码块
+```
+
+```python
+a = input("input a")
+b = input("input b")
+
+try:
+    a = int(a)
+    b = int(b)
+    c = a / b
+    print(c)
+except:
+    print('error')
+print('123')
+```
+
+
+
+#### 多个 except
+
+> except 异常1:
+>
+> except 异常2:
+>
+> 多个异常顺序要求
+
+若没有捕获异常，则报错（可用父类Exception 捕获）
+
+```python
+a = input("input a")
+b = input("input b")
+
+try:
+    a = int(a)
+    b = int(b)
+    c = a / b
+    print(c)
+except ValueError:
+    print('error')
+except ZeroDivisionError:
+    print('error1')
+except Exception:
+    print('其他异常')
+print('123')
+```
+
+
+
+第二种解决方式（放元组之间）
+
+> expect 异常 as e:
+>
+> ​	print(type(e))
+>
+> ​	# 错误信息
+>
+> ​	print(a.args)
+>
+> ​	print("遇到异常")
+
+使用元组存储多个异常的时，多个异常之间没有顺序要求
+
+```python
+except (异常1， 异常2， 异常3) as e:
+	print(type(e))
+	print('遇到异常')
+```
+
+
+
+#### try-except-else-finally
+
+```python
+try:
+except 异常 as 变量:
+else:
+	没有异常，执行的代码
+finally:
+	最终一定要执行的代码
+```
+
+案例：将一些字符串数据写入到文件中
+
+```python
+# 这里有个小坑，open如果由于权限不足报错被try-except 捕获，到最后的finally 会报错(文件压根没打开)
+try:
+    fd = open('read.txt', 'w', encoding='utf-8')
+    fd.write("yeye")
+    fd.write("ysys")
+    fd.write([1, 2, 3])
+except Exception as e:
+    print(e.args)
+else:
+    print("没有异常")
+finally:
+    # 最后一定要确保执行的代码
+    fd.close()
+    print("关闭文件蟹蟹使用")
+```
+
+
+
+#### 异常处理的传递机制
+
+按照调用，一级一级往上查找异常处理，直到Python解释器没找到异常处理则报错
+
+```python
+def test01():
+    print("test1开始")
+    print(aa)
+def test02():
+    print("test2开始")
+    test01()
+    print("test2结束")
+def test03():
+    print("test3开始")
+    try:
+        test02()
+    except:
+        pass
+    print("test3结束")
+test03()
+```
+
+
+
+#### 抛出自定义异常
+
+- 自定义异常
+- 以及抛出自定义异常
+
+```python
+class GenderException(Exception):
+	def __init__(self):
+		super().__init__()
+		self.errMsg = "性别只能设置男和女"
+```
+
+
+
+```Python
+class GenderException(Exception):
+    def __init__(self):
+        super().__init__()
+        self.errMsg = "性别只能设置男和女"
+
+class student():
+    def __init__(self, name, gender):
+        self.name = name
+        self.setGener(gender)
+    def setGener(self, gender):
+        if gender == '男' or gender == '女':
+            self.__gender = gender
+        else:
+            raise GenderException()
+    def getGender(self):
+        return self.__gender
+    def showInfo(self):
+        print("name = %s, gender = %s" % (self.name, self.__gender))
+try:
+    stu = student("学生1", '123')
+    stu.showInfo()
+except Exception as e:
+    print(type(e))
+    print(e.errMsg)
+```
+
+
+
+#### 异常处理底层
+
+
+
+
+
 ### LEGB 规则
 
 Python查找名称时，是按照LEGB 规则查找的：local -> Enclosed -> global -> build in
@@ -1709,3 +1901,69 @@ from MyMath import *
 from package1 import * # => 等同于from package1.MyMath import *
 ```
 
+
+
+### 模块的发布
+
+- 模块的发布
+
+  - 为什么要发布
+
+  - `sys.path` （导入目标模块）
+
+    ```python
+    import sys
+    result = sys.path
+    print(type(result))
+    for i in result:
+    	print(i)	# 类似C++ 动态库搜索路径一般
+    ```
+
+    解决方法：
+
+    1. 将模块所在路径，手动加入到`sys.path` 中
+
+    2. 将自定义模块，发布到系统目录
+
+       - 确定发布的模块（目录结构）
+
+         | -- setup.py
+
+         | -- package1
+
+         ​		|
+
+         ​			-- 自定义模块MyMath
+
+       - setup 的编辑工作
+         setup()
+
+       - 构建模块
+
+         python setup.py build
+
+       - 发布模块
+
+         python setup.py sdist
+
+    ```python
+    import sys
+    sys.path.append("URL") # 路径分隔符分两种方式：1. '/' 2. '\\'
+    ```
+
+    setup.py
+
+    ```python
+    from distutils.core import setup
+    setup(name='自定义压缩包', version='1.0', description='描述', author='Devi', py_modules=['package1.MyMath', ])
+    ```
+
+    
+
+- 模块的安装
+
+  1. 通过命令完成安装（推荐）更安全（https://www.bilibili.com/video/BV1FT4y1Z7yi?p=116）
+     - 找到之前的发布的压缩包，解压操作
+     - python setup.py install（安装到系统路径） / pythono setup.py install -prefix='url'（类似gcc）
+  2. 暴力安装
+     - 直接将要安装的包，以及模块，复制对应的系统路径
