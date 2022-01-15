@@ -345,6 +345,16 @@ print("{name} = {age}".format(name=123, age=123))
 
 
 
+#### == 与 is 的比较
+
+意义
+
+`==` 用来比较两个值是否相等
+
+`is` 用来表示两个变量是否同一个
+
+
+
 ### 可变字符串
 
 在Python中欧个，字符串属于不可变对象，不支持原地修改，如果需要修改其中的值，只能创建新的字符串对象。但是，经常我们确实需要原地修改字符换，可以使用io.StringIO对象或array模块
@@ -1468,9 +1478,50 @@ e1 = Emploee()
 print(e1.salary)
 ```
 
+@property 简化私有属性的访问方式
+
+```python
+class Student(object):
+    def __init__(self, name, age):
+        self.name = name
+        self.__age = age
+    def setAge(self, age):
+        if isinstance(age, int):
+            self.__age = age
+        else:
+            raise TypeError("类型错误")
+    def getAge(self):
+        return self.__age
+    age = property(getAge, setAge)
+
+s1 = Student("ysy", 18)
+s1.age = 19
+print(s1.age)
+```
+
 
 
 #### 属性私有化
+
+1. xx 一般情况下使用的变量
+
+2. _xx  `_PI=3.14` 在某个模块中，如果变量是 _xx 形式的，使用from import * 的方式，无法使用
+
+3. __xx 私有属性/私有方法（其实就是改名了）（名字重整（改名））
+
+   比如 __age 的访问变成，`_Class__age` 访问
+
+   私有方法也是一致
+
+4. ________xx________
+
+   主要用于方法
+
+   `__init__`、`__del__` 等自定义方法避免与方法重名
+
+5. xx__
+
+​		用来区分变量名/方法名
 
 ```python
 class Emploee:
