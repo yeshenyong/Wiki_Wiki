@@ -2,6 +2,15 @@
 
 
 
+### sed 命令
+
+```sh
+# 显示指定行号内容
+sed -n '100p' file.txt
+```
+
+
+
 ### awk
 
 awk 是行处理器，优点是处理庞大文件时不会出现内存溢出或处理缓慢的问题，通常用来格式化文本信息。awk依次对每一行进行处理，然后输出。 
@@ -349,3 +358,98 @@ us: 用户进程执行时间(user time)
 \- sy: 系统进程执行时间(system time)
 \- id: 空闲时间(包括IO等待时间)
 \- wa: 等待IO时间
+
+
+
+
+
+### ipcs 查询进程间通信状态
+
+> ​	ipcs 是 Linux 下显示进程间通信设施状态的工具。可以显示消息队列、共享内存和信号量的信息。对于程序员非常有用。
+
+```sh
+ipcs
+------ Shared Memory Segments --------
+key        shmid      owner      perms      bytes      nattch     status
+ 
+------ Semaphore Arrays --------
+key        semid      owner      perms      nsems
+0x00000000 229376     weber      600        1
+ 
+------ Message Queues --------
+key        msqid      owner      perms      used-bytes   messages
+
+- ipcs -m 查看系统使用的IPC共享内存资源
+- ipcs -q 查看系统使用的IPC队列资源
+- ipcs -s 查看系统使用的IPC信号量资源
+```
+
+```sh
+ipcs -l
+ 
+------ Shared Memory Limits --------
+max number of segments = 4096
+max seg size (kbytes) = 4194303
+max total shared memory (kbytes) = 1073741824
+min seg size (bytes) = 1
+ 
+------ Semaphore Limits --------
+max number of arrays = 128
+max semaphores per array = 250
+max semaphores system wide = 32000
+max ops per semop call = 32
+semaphore max value = 32767
+ 
+------ Messages: Limits --------
+max queues system wide = 2048
+max size of message (bytes) = 524288
+default max size of queue (bytes) = 5242880
+```
+
+以上输出显示，目前这个系统的允许的最大内存为1073741824kb；最大可使用128个信号量，每个消息的最大长度为524288bytes；
+
+**修改IPC系统参数**
+
+以linux系统为例，在root用户下修改`/etc/sysctl.conf` 文件，保存后使用`sysctl -p`生效:
+
+```shell
+- cat /etc/sysctl.conf
+# 一个消息的最大长度
+kernel.msgmax = 524288
+ 
+# 一个消息队列上的最大字节数
+# 524288*10
+kernel.msgmnb = 5242880
+ 
+#最大消息队列的个数
+kernel.msgmni=2048
+ 
+#一个共享内存区的最大字节数
+kernel.shmmax = 17179869184
+ 
+#系统范围内最大共享内存标识数
+kernel.shmmni=4096
+ 
+#每个信号灯集的最大信号灯数 系统范围内最大信号灯数 每个信号灯支持的最大操作数 系统范围内最大信号灯集数
+#此参数为系统默认，可以不用修改
+#kernel.sem = <semmsl> <semmni>*<semmsl> <semopm> <semmni>
+kernel.sem = 250 32000 32 128
+```
+
+
+
+
+
+
+
+### 常用指令
+
+```shell
+# 查找目录下.py 结尾的文件行数
+find . -name *.py | xargs wc -l
+# 查看进程打开文件描述符(对每个文件描述符可以vim查看数据)
+ls /proc/pid/fd/
+# 文件查找指定字符串并显示下3行，并显示当前行号
+grep -r key=4250105673933320892 ha3_doc.* -A 3 -n
+```
+
