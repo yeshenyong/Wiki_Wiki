@@ -159,6 +159,134 @@ https://www.cnblogs.com/klb561/p/9236360.html
 
 
 
+### 用户租操作
+
+查看用户组
+
+```sh
+cat /etc/group
+```
+
+添加组
+
+```
+ groupadd student
+```
+
+修改组名称
+
+```
+ groupmod -n stu student
+```
+
+修改组编号
+
+```
+ groupmod -g 111 stu
+```
+
+添加分组并指定编号
+
+```
+ groupadd -g 222 teacher
+```
+
+删除分组
+
+```
+ groupdel 222
+```
+
+添加分组
+
+```
+ groupadd teacher
+```
+
+为用户指定所属组
+
+```
+ useradd -g teacher zhangsan
+```
+
+为用户指定所属组
+
+```
+ useradd -g teacher lisi
+```
+
+为用户指定工作目录
+
+```
+ useradd -d /home/zhangsan zhangsan
+```
+
+指定注释
+
+```
+ usermod -c iamateacher zhangsan
+```
+
+修改用户名
+
+```
+ usermod -l zhangsan zhangsan2
+```
+
+指定文件夹
+
+```
+ usermod -d /home/zhangsan2 zhangsan2
+```
+
+修改用户所属组
+
+```
+ usermod -g stu zhangsan2
+```
+
+删除用户
+
+```
+ userdel zhangsan2
+```
+
+删除所属文件夹
+
+```sh
+ userdel -r lisi
+```
+
+
+
+### 用户命令
+
+显示登录的用户名
+
+```
+ whoami
+```
+
+显示指定用户信息，包括用户编号，用户名 主要组的编号及名称，附属组列表
+
+```
+ id zhangsan  
+```
+
+显示 zhangsan 用户所在的所有组
+
+```
+ groups zhangsan
+```
+
+显示用户详细资料
+
+```sh
+ finger zhangsan  
+```
+
+
+
 ### strace 命令
 
 ​	strace官网的描述, strace是一个可用于诊断、调试和教学的[Linux](https://so.csdn.net/so/search?from=pc_blog_highlight&q=Linux)用户空间跟踪器。我们用它来**监控用户空间进程和内核的交互**，比如系统调用、信号传递、进程状态变更等（比如你要查看epoll 是否有mmap调用）
