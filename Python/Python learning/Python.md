@@ -51,6 +51,15 @@ del a
 
 
 
+### tqdm 进度条
+
+```python
+from tqdm import tqdm
+for i in tqdm(range(len(length)))
+```
+
+
+
 ### 链式赋值
 
 ```python
