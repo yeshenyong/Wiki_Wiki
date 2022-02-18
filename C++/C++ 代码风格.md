@@ -1,6 +1,14 @@
 # C++ 代码风格
 
+\- 单一职责原则（Single ResponsibilityPrinciple）
 
+\- 开闭原则 (Open Close Principle)
+
+\- 里氏替换原则 (Liskov Substitution Principle)
+
+\- 接口隔离原则 (InterfaceSegregation Principle)
+
+\- 依赖反转原则 (Dependence InversionPrinciple)
 
 ### 头文件
 
