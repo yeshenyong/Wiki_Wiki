@@ -566,7 +566,23 @@ kernel.sem = 250 32000 32 128
 
 
 
+### $ 符号
 
+`$` 符号作为一个元字符有不同的含义。当用于匹配模式时，它意味着任何以给定字符串结尾的字符串。例如，当同时使用元字符 `|` 和 `$` 时：
+
+```sh
+$ ls | grep png$BlountScreenPicture.pngDisplaySettings.pngEbookStats.pngStrategicPlanMenu.pngScreenshot from 01-24 19-35-05.png
+```
+
+
+
+### ^ 符号
+
+符号 `^` 将结果限制在以给定字符串开始的项目上。例如，当同时使用元字符 `|` 和 `^` 时：
+
+```shell
+$ ls | grep ^ScreenScreenshot from 01-24 19-35-05.png
+```
 
 
 
