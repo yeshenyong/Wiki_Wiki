@@ -595,5 +595,8 @@ find . -name *.py | xargs wc -l
 ls /proc/pid/fd/
 # 文件查找指定字符串并显示下3行，并显示当前行号
 grep -r key=4250105673933320892 ha3_doc.* -A 3 -n
+# 查看服务器打开的文件描述符
+ps -ef | grep websrv
+sudo lsof -p 6346 # 使用 -p 选项指定进程号（lsof，list open file）
 ```
 
