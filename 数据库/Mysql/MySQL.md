@@ -22,3 +22,7 @@ SHOW TABLE STATUS LIKE 'user'
 
 
 
+MySQL 增删改不刷盘，会先写缓冲区，这时候其他连接MySQL的工具不能对行数据进行增删改
+
+
+

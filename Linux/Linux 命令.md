@@ -598,5 +598,7 @@ grep -r key=4250105673933320892 ha3_doc.* -A 3 -n
 # 查看服务器打开的文件描述符
 ps -ef | grep websrv
 sudo lsof -p 6346 # 使用 -p 选项指定进程号（lsof，list open file）
+# 查看所有内核参数
+sysctl -a
 ```
 
