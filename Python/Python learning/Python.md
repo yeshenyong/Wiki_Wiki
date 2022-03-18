@@ -259,7 +259,40 @@ str1 = "".join(li)
 
 
 
+### 字符串前加 u、r、b
 
+字符串前加**u**
+
+> u"'我是含有中文字符的字符串'
+
+Unicode 编码
+
+字符串前加**r**
+
+例：r"\n\n\n"	# 表示一个普通生字符串\n\n\n，而不表示换行
+
+作用：去掉反斜杠的转移机制
+
+字符串前加**b**
+
+例：response = b'<h1>hellow world</h1>'	# b''表示是一个bytes 对象
+
+作用：
+
+b"" 前缀表示：后面字符串是bytes 类型
+
+用处：网络编程中，服务器和浏览器只认bytes 类型数据
+
+如：send函数的参数和recv函数的返回值都是bytes类型
+
+附：
+
+在Python3 中，bytes和str的互相转换方式是：
+
+```python
+str.encode('utf-8')
+bytes.decode('utf-8')
+```
 
 ### 常用查找方法
 
