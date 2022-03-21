@@ -77,7 +77,7 @@ int main() {
 应先用gcc 编译C语言的代码
 
 ```sh
-gcc - c foo.c
+gcc -c foo.c
 ```
 
 
