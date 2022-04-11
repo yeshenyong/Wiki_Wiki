@@ -720,6 +720,15 @@ for x, y in d.items():
 
 
 
+### setdefault
+
+```python
+color_idx = {}
+color_idx.setdefault(Y[i][0], [])
+```
+
+
+
 ##### **通过zip() 创建字典对象**
 
 ```python
@@ -1909,6 +1918,10 @@ print(obj2
 
 
 
+### yield 关键字
+
+
+
 ### ____all____ 的使用
 
 Python3环境下不提倡使用
@@ -2016,6 +2029,43 @@ from MyMath import *
 ```python
 # test.py
 from package1 import * # => 等同于from package1.MyMath import *
+```
+
+
+
+```python
+# __init__.py
+from graphlearn.python.data.decoder import Decoder
+from graphlearn.python.data.feature_spec import FeatureSpec
+from graphlearn.python.data.feature_spec import SparseSpec
+from graphlearn.python.data.feature_spec import DenseSpec
+from graphlearn.python.data.feature_spec import MultivalSpec
+from graphlearn.python.data.state import NodeState, EdgeState
+from graphlearn.python.data.topology import Topology
+from graphlearn.python.data.values import Values
+from graphlearn.python.data.values import Nodes, Edges
+from graphlearn.python.data.values import SparseNodes, SparseEdges
+from graphlearn.python.data.values import Layer, Layers
+from graphlearn.python.data.values import SubGraph
+
+__all__ = [
+    "Decoder",
+    "SparseSpec",
+    "DenseSpec",
+    "MultivalSpec",
+    "NodeState",
+    "EdgeState",
+    "Topology",
+    "Values",
+    "Nodes",
+    "Edges",
+    "SparseNodes",
+    "SparseEdges",
+    "Layer",
+    "Layers",
+    "SubGraph"
+]
+
 ```
 
 
