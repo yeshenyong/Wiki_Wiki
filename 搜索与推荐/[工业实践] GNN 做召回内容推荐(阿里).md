@@ -227,7 +227,7 @@ DICE是2021年发表在WWW Disentangling Interest and Conformity with Causal Emb
 
 ##### 模型结构
 
-如下图所示，我们基于两个**二部图的GNN模型**分别学习user和item的interest和conformity两部分向量，并集成到DICE框架中，将用户交互行为产生的驱动因素解耦为兴趣和流行度两个部分。
+如下图所示，我们基于两个**二部图的GNN模型**分别学习user和item的interest和conformity两部分向量，并集成到DICE框架中，将用户交互行为产生的驱动因素解耦为**兴趣和流行度**两个部分。
 
 ![图片](https://mmbiz.qpic.cn/mmbiz_png/33P2FdAnju8zZtLVahOicmUqnuRoDulXl8yHTpkgvkibMN8VvPoOtCT90SdeicbJEyEOGPyCAkrnEjhbwS08Okzjw/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1)
 
@@ -251,13 +251,13 @@ DICE是2021年发表在WWW Disentangling Interest and Conformity with Causal Emb
 
 ##### 线上召回
 
-线上服务主要根据用户属性特征和引流信息，查询的得到interest向量进行u2i召回。
+线上服务主要根据用户属性特征和引流信息，查询的得到**interest向量**进行u2i召回。
 
 
 
 ##### 在线效果A/B Test
 
-在推荐效率指标上pctr+0.75%，ipv_pctr+0.48%，pctcvr+1.24%。在多样性指标上，单次请求中，曝光不同空间内容数+0.04%，曝光不同风格内容数+0.15%，点击不同空间内容数+0.68%，点击不同风格内容数+0.72%。从中可以发现通过向量解耦解决流行度偏差问题，挖掘用户真实意图，对于效率指标和多样性指标的提升均有一定的帮助。
+在推荐效率指标上pctr+0.75%，ipv_pctr+0.48%，pctcvr+1.24%。在多样性指标上，单次请求中，曝光不同空间内容数+0.04%，曝光不同风格内容数+0.15%，点击不同空间内容数+0.68%，点击不同风格内容数+0.72%。从中可以发现**通过向量解耦解决流行度偏差问题，挖掘用户真实意图，对于效率指标和多样性指标的提升均有一定的帮助**。
 
 
 
