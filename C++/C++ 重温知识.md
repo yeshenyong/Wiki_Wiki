@@ -253,7 +253,7 @@ std::operator<<(std::operator<<(std::cout, "Hello "), "World ");
 
 - 性能分析
 
-  ​	关于性能分析我其实更多的还是在代码中打印函数耗时，关于怎么优雅的打印函数耗时可以移步这里[**RAII妙用之计算函数耗时**](http://mp.weixin.qq.com/s?__biz=MzkyODE5NjU2Mw==&mid=2247484795&idx=1&sn=ba7f3ec2787246d1162f0d9565d122b6&chksm=c21d37c7f56abed15d1e843b2da8ff593512bed78d3f83cc6ef6decf86d2b253e5443d91b199&scene=21#wechat_redirect)。再推荐个性能分析的工具，gperftools，这个工具是Google出品，可以提供整个程序的热点分布图，方便我们找到性能的瓶颈。
+  ​	关于性能分析我其实更多的还是在代码中打印函数耗时，关于怎么优雅的打印函数耗时可以移步这里[**RAII妙用之计算函数耗时**](http://mp.weixin.qq.com/s?__biz=MzkyODE5NjU2Mw==&mid=2247484795&idx=1&sn=ba7f3ec2787246d1162f0d9565d122b6&chksm=c21d37c7f56abed15d1e843b2da8ff593512bed78d3f83cc6ef6decf86d2b253e5443d91b199&scene=21#wechat_redirect)。再推荐个性能分析的工具，**gperftools**，这个工具是Google出品，可以提供整个程序的热点分布图，方便我们找到性能的瓶颈。
 
 ![图片](https://mmbiz.qpic.cn/mmbiz_png/JeibBY5FJRBEuwrCJUMO5g7sfIfgHJMPWg3oreQeww0J4VuTRSm4Iup1VGSlzL652LBdv2QdmVD0oKrwhrNibbhA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
 
@@ -261,13 +261,52 @@ std::operator<<(std::operator<<(std::cout, "Hello "), "World ");
 
 
 
+#### new[] 和 delete[] 为何配对
+
+​	因为 new[]会创建一个数组，一个对象数组需要一定的空间大小，假设一个对象需要 N 字节大小，K 个对象的数组就需 要 K*N 个空间来构造对象数组，但是在 delete[]时候，如何知道数组的长度呢？ 
+
+​	所以 new[]会在 K*N 个空间的基础上，头部多申请 4 个字节，用于存储数组长度，这样 delete[]时候才知道对象数组的 大小，才会相应调用 K 次析构函数，并且释放 K*N+4 大小的内存。 
+
+这是我们平时编程中经常配对使用的情况，如果不配对使用呢
+
+```c++
+int main(int argc, char *argv[]) {
+    inner *p = new inner[2];
+    delete p;
+    return 0;
+} 
+```
+
+```sh
+16. 程序输出：
+17. Constructing
+18. Constructing
+19. Destructing
+20. munmap_chunk(): invalid pointer
+21. Aborted (core dumped)
+```
+
+这里发现：程序挂掉了。
+
+并且，只调用了一次析构函数，为什么呢？
+
+因为我们使用了 delete，delete 不同于 delete[]，它认为这只是一个对象占用的空间，不是对象数组，不会访问前 4 个 字节获取长度，所以只调用了一次析构函数。
+
+而且，最后释放内存的时候只释放了起始地址为 A 的内存。**然而这不是 这一整块内存的起始地址**，整块内存的起始地址应该是 A-4，**释放内存如果不从内存起始地址操作就会出现断错误**，所 以**导致程序挂掉**。
 
 
 
+#### C++数组长度可以为变量吗
 
+ C++是支持变量长度的数组的，说不支持的那是很古老的编译器
 
+备注：尽管 C++目前支持变量长度的数组，但是不建议使用，因为数组使用的是栈内存，栈内存是有大小限制的，一般是 8192 字节，既然长度是变量，那就可能是任何值，就有可能超过 8192，**这样就会 stack overflow**，所以动态内存最好使用堆内存。
 
+C++中数组长度可以是变量，但是不建议使用，因为数组使用的是栈内存，变量可以是个比较大的数，这样会导致 stack overflow， 建议使用堆内存。
 
+ 操作超过数组长度的内存可以编译通过且表面上看不出来问题，但是会导致栈内存出现脏写，最终可能会引发难以排查的 bug，
+
+建议数组使用 std::array，操作超过长度的下标会抛异常有利于开发者及时发现错误。
 
 
 
