@@ -1280,6 +1280,752 @@ A *a = new Derive(); // A为Derive的基类
 
 
 
+#### C++ 异常（待补充）
+
+​	在 c++中关于是否使用异常一直都有争议，典型的就是知乎上陈硕大神说的不应该使用异常，还有就是 **google 和美国国防部** 等都明确定义编码规范来**禁止在 c++中使用异常**，这里我找了很多中英文资料，在文末参考链接列举了一些。
+
+关于是否使用异常的讨论帖子在这，https://www.zhihu.com/question/22889420
+
+​	而 google 明确**禁用异常其实是有历史包袱的，他们也认同异常处理是比错误码更好的处理方式**，但他们别无选择，因为**以前 的编译器对异常处理**的不好，他们项目里面已经有了大量的非异常安全的代码，如果全改成异常处理的代码是有很大的工作量 的，具体可以看上面的链接和我文末引用的一些链接
+
+美国国防部禁用异常是出于实时性能考虑，工具链不能保证程序抛出异常时的实时性能，但国防部禁用了很多 c++特性，例如 内存分配，我们真的追求飞机一样的高性能吗？ 通过上面的介绍大家应该能猜到我的结论了吧，当然这不是我的结论，而是大佬们的结论：**推荐使用异常处理。** 
+
+异常处理有一些潜在的缺点：
+
+- 会有限的影响程序的性能，但正常工作流中不抛出异常的时候速度和普通函数一样快，甚至更快
+- 会导致程序体积变大 10%-20%，但我们真的那么在乎程序的体积吗（除了移动端）
+
+异常处理相对于使用错误码的好处：
+
+- 如果不使用 trycatch 那就需要使用返回错误码的方式，那就必然增加 ifelse 语句，每次函数返回后都会增加判断的开销，如 果可以消除 trycatch，代码可能会更健壮，举例如下
+
+```c++
+void f1()
+{
+ try {
+   // ...
+   f2();
+   // ...
+} catch (some_exception& e) {
+   // ...code that handles the error...
+}
+}
+void f2() { ...; f3(); ...; }
+void f3() { ...; f4(); ...; }
+void f4() { ...; f5(); ...; }
+void f5() { ...; f6(); ...; }
+void f6() { ...; f7(); ...; }
+void f7() { ...; f8(); ...; }
+void f8() { ...; f9(); ...; }
+void f9() { ...; f10(); ...; }
+void f10()
+{
+ // ...
+ if ( /*...some error condition...*/ )
+   throw some_exception();
+ // ...
+}
+```
+
+而使用错误码方式：
+
+```c++
+int f1()
+{
+ // ...
+ int rc = f2();
+ if (rc == 0) {
+   // ...
+} else {
+   // ...code that handles the error...
+}
+}
+int f2()
+{
+ // ...
+ int rc = f3();
+ if (rc != 0)
+   return rc;
+ // ...
+ return 0;
+}
+int f3()
+{
+ // ...
+ int rc = f4();
+ if (rc != 0)
+   return rc;
+ // ...
+ return 0;
+}
+int f4()
+{
+ // ...
+ int rc = f5();
+ if (rc != 0)
+   return rc;
+ // ...
+ return 0;
+}
+// ...
+int f10()
+{
+ // ...
+ if (...some error condition...)
+   return some_nonzero_error_code;
+ // ...
+ return 0;
+}
+```
+
+错误码方式对于问题的反向传递很麻烦，导致代码肿胀，假如中间有一个环节忘记处理或处理有误就会导致 bug 的产生，异常 处理对于错误的处理更简洁，可以更方便的把错误信息反馈给调用者，同时不需要调用者使用额外的 ifelse 分支来处理成功或 者不成功的情况
+
+- 一般来说使用错误码方式标明函数是否成功执行，一个值标明函数成功执行，另外一个或者多个值标明函数执行失败，不 同的错误码标明不同的错误类型，调用者需要对不同的错误类型使用多个 ifelse 分支来处理。如果有更多 ifelse，那么必然 写出更多测试用例，必然花费更多精力，导致项目晚上线。
+
+拿数值运算代码举例：
+
+```c++
+class Number {
+public:
+ friend Number operator+ (const Number& x, const Number& y);
+ friend Number operator- (const Number& x, const Number& y);
+ friend Number operator* (const Number& x, const Number& y);
+ friend Number operator/ (const Number& x, const Number& y);
+ // ...
+};
+```
+
+最简单的可以这样调用:
+
+```c++
+void f(Number x, Number y) {
+ // ...
+ Number sum  = x + y;
+ Number diff = x - y;
+ Number prod = x * y;
+ Number quot = x / y;
+ // ...
+}
+```
+
+但是如果需要处理错误，例如除 0 或者数值溢出等，函数得到的就是错误的结果，调用者需要做处理。
+
+先看使用错误码的方式：
+
+```c++
+class Number {
+public:
+ enum ReturnCode {
+   Success,
+   Overflow,
+   Underflow,
+   DivideByZero
+};
+ Number add(const Number& y, ReturnCode& rc) const;
+ Number sub(const Number& y, ReturnCode& rc) const;
+ Number mul(const Number& y, ReturnCode& rc) const;
+ Number div(const Number& y, ReturnCode& rc) const;
+ // ...
+};
+
+int f(Number x, Number y)
+{
+ // ...
+ Number::ReturnCode rc;
+ Number sum = x.add(y, rc);
+ if (rc == Number::Overflow) {
+   // ...code that handles overflow...
+   return -1;
+} else if (rc == Number::Underflow) {
+   // ...code that handles underflow...
+   return -1;
+} else if (rc == Number::DivideByZero) {
+   // ...code that handles divide-by-zero...
+   return -1;
+}
+ Number diff = x.sub(y, rc);
+ if (rc == Number::Overflow) {
+   // ...code that handles overflow...
+   return -1;
+} else if (rc == Number::Underflow) {
+   // ...code that handles underflow...
+   return -1;
+} else if (rc == Number::DivideByZero) {
+   // ...code that handles divide-by-zero...
+   return -1;
+}
+ Number prod = x.mul(y, rc);
+ if (rc == Number::Overflow) {
+   // ...code that handles overflow...
+   return -1;
+} else if (rc == Number::Underflow) {
+   // ...code that handles underflow...
+   return -1;
+} else if (rc == Number::DivideByZero) {
+   // ...code that handles divide-by-zero...
+   return -1;
+}
+ Number quot = x.div(y, rc);
+ if (rc == Number::Overflow) {
+   // ...code that handles overflow...
+   return -1;
+} else if (rc == Number::Underflow) {
+   // ...code that handles underflow...
+   return -1;
+} else if (rc == Number::DivideByZero) {
+   // ...code that handles divide-by-zero...
+   return -1;
+}
+ // ...
+}
+```
+
+
+
+再看使用异常处理的方式：
+
+```c++
+void f(Number x, Number y)
+{
+ try {
+   // ...
+   Number sum  = x + y;
+   Number diff = x - y;
+   Number prod = x * y;
+   Number quot = x / y;
+   // ...
+}
+ catch (Number::Overflow& exception) {
+   // ...code that handles overflow...
+}
+ catch (Number::Underflow& exception) {
+   // ...code that handles underflow...
+}
+ catch (Number::DivideByZero& exception) {
+   // ...code that handles divide-by-zero...
+}
+}
+```
+
+如果有更多的运算，或者有更多的错误码，异常处理的优势会更明显。
+
+- 使用异常可以使得代码逻辑更清晰，将代码按正确的逻辑列出来，逻辑更紧密代码更容易读懂，而错误处理可以单独放到最后做处理。
+- 异常可以选择自己处理或者传递给上层处理
+
+##### 异常处理的关键点
+
+1. 不应该使用异常处理做什么
+
+
+
+
+
+异常处理对于错误的处理更简洁，可以更方便的把错误信息反馈给调用者，同时不需要调用者使用额外的 ifelse 分支来处理成功或者不成功的情况。如果不是特别特别注重实时性能或者特别在乎程序的体积我们完全可以使用异常处理替代我们平时使用的 c 语言中的那种错误码处理方式。
+
+
+
+
+
+#### 指针与引用的使用场景
+
+- 指针与引用有什么区别？
+- 什么时候应该使用指针？什么时候应该使用引用？
+
+
+
+指针和引用的区别 
+
+首先看一段代码：
+
+```c++
+int a = 1;
+int b = 2;
+int *c = nullptr;
+c = &a;
+int &d = b;
+```
+
+指针其实就是一个存放[内存](https://so.csdn.net/so/search?q=内存&spm=1001.2101.3001.7020)地址的整数，这个整数表示的是被指向的变量的地址。
+
+引用其实就是变量的别名，就是给变量重新起了一个名字，注意引用既然是个别名，**那它一定要有本体**，一个人叫王二小，我们也可以给它起个别名叫二蛋，我们提到二蛋和王二小其实都是同一个人。
+
+区别：
+
+- 指针在声明时可以暂时不初始化，即pointer = nullptr，指针在生命周期内随时都可能是空指针，所以在每次使用时都要做检查，防止出现空指针异常问题，而引用却不需要做检查，因为引用永远都不会为空，它一定有本体，一定得代表某个对象，引用在创建的同时必须被初始化。
+
+  ```c++
+  void FuncPtr(int *ptr) {
+      if (ptr != nullptr) {
+          cout << *ptr;
+      }
+  }
+  
+  void FuncReference(int &ref) {
+      cout << ref;
+  }
+  ```
+
+- 指针存放的是地址，**指针可以被重新赋值，可以在初始化时指向一个对象**，在其它时刻也可以指向另一个对象，**而引用非常专一，它会从一而终，它总是指向它最初代表的那个对象**。再举个例子，**有一个人叫特朗普，为他起个引用别名叫历史上最傻吊的总统，这个引用一定会从一而终，即无论什么时候，历史上最傻吊的总统一定是特朗普。而美国总统可以当作个指针，一段时间可以是奥巴马，过一段时间可以是特朗普，再过一段时间可能是nullptr**。
+
+
+
+指针和引用的使用场景
+
+引用的主要功能就是作为函数的参数和返回值，看一段代码：
+
+```c++
+struct A {
+    int a;
+};
+void func(const A &a) {
+    cout << a.a;
+}
+
+vector<int> vec(10);
+vec[3] = 3;
+```
+
+为什么通过vec[3] =3可以改变vector容器的值，因为[]操作符返回的就是引用，相当于为内部的变量起了一个别名，这里还可以让[]操作符返回一个指针，即*vec[3]=3，这是不是有点丑，而且不符合语法需求。
+
+其实我们平时编程过程中可能也注意到，实际上引用可以做的事情指针都可以做，但为什么还要引用这个东西？
+
+答案：用恰当的工具做恰如其分的工作，指针可以毫无约束的操作内存中的任何东西，功能十分强大，但是也很危险，所以可以在恰当的时机使用引用，当你需要指向某个东西，而且一定专一，绝不会让其指向其它东西，例如有些函数参数为了避免拷贝可以使用引用，或者实现一个操作符而其语法需求无法由指针达成，例如vec[3]=3，可以使用引用，其它任何时候，都要使用指针
+
+1. 对象十分明确，不存在更换（引用）
+
+
+
+
+
+#### RAII 妙用之ScopeExit
+
+
+
+**什么是RAII**
+
+Resource Acquisition Is Initialization，资源获取即初始化，将资源的生命周期与一个对象的生命周期绑定，举例来说就是，把一些资源封装在类中，在构造函数请求资源，在析构函数中释放资源且绝不抛出异常，而一个对象在生命周期结束时会自动调用析构函数，即资源的生命周期与一个对象的生命周期绑定。
+
+
+
+RAII 的应用
+
+见如下代码：
+
+```c++
+1. std::mutex mutex;
+2. void func() {}
+3. void NoRAII() {
+4. 		mutex.lock();
+5. 		func();
+6. 		if (xxx) {
+7. 			mutex.unlock();// 多次需要调用 unlock()，还有可能忘记调用 unlock 导致一直持有锁
+8. 			return;
+9. 		}
+10. 	... 
+11. 	mutex.unlock();
+12. }
+13. void RAII() { // 不需要显式调用 unlock
+14. 	std::lock_guard<std::mutex> lock(mutex);
+15. 	func();
+16. 	if (xxx) {
+17. 		return;
+18. 	}
+19. 	... 
+20. 	return;
+21. }
+```
+
+RAII 的应用非常多，C++的 STL 基本都遵循 RAII 规范，典型的如 vector, string, lock_guard, unique_lock, shared_ptr, unique_ptr 等，这里不会介绍这些 STL 的使用，相信大家也都会使用，如果有相关需求可以留言
+
+
+
+**RAII 的巧用**
+
+最近研究了 boost 中的 ScopeExit，发现这是个很高级的特性，利用 RAII 特性，可以在作用域结束时自动关闭已 经打开的资源或做某些清理操作，类似于 unique_ptr，但又比 unique_ptr 方便，不需要自定义 delete 函数。 举例: 如果没有 ScopeExit
+
+```c++
+1. void test () {
+2. 		char *test = new char[100];
+3. 		if (a) {
+4. 			delete[] test; // count 1
+5. 			return;
+6. 		}
+7. 		xxx;
+8. 		if (b) {
+9. 			delete[] test; // count 2
+10. 		return;
+11. 	}
+12. 	... 
+13. 	delete[] test; // count 3
+14. }
+```
+
+**使用了 ScopeExit**
+
+```c++
+1. void test () {
+2. 		char *test = new char[100];
+3. 		std::ofstream ofs("test.txt");
+4. 		ScopeExit {
+5. 			delete[] test; // 在 test 函数生命周期结束后自动执行 delete[]操作
+6. 			ofs.close(); // 在生命周期结束后自动关闭文件，这里只是举个不恰当例子，ofstream 自动生命周期结束后就会关闭
+7. 		};
+8. 		if (a) {
+9. 			return;
+10. 	}
+11. 	xxx;
+12. 	if (b) {
+13. 		return;
+14. 	}
+15. 	... 
+16. 
+```
+
+当然，正常 C++代码不鼓励使用裸指针，可以使用智能指针来申请资源，这里只是举个例子，使用 ScopeExit 也 可以用于处理文件资源的关闭等等
+
+两者代码比较后优劣程度显而易见，不使用 ScopeExit 需要在 return 前多次做资源清理操作，而使用了 ScopeExit 则只需做一次声明后在作用域结束后会自动进行相关的资源清理操作，方便而且不易出错。
+
+
+
+##### ScopeExit 实现
+
+这里参考 boost 使用 C++11 实现了一套 ScopeExit 机制
+
+```C++
+#include <functional>
+
+#ifndef SCOPE_EXIT_H
+#define SCOPE_EXIT_H
+
+class ScopeExit {
+    public:
+        ScopeExit() = default;
+
+        ScopeExit(const ScopeExit&) = delete;
+        void operator=(const ScopeExit&) = delete;
+
+        ScopeExit(ScopeExit&) = default;
+        ScopeExit& operator=(ScopeExit&&) = default;
+
+        template <typename F, typename ... Args>
+        ScopeExit(F&& t, Args&& ... args) {
+            func_ = std::bind(std::forward<F>(f), std::forward<Args>(args));
+        }
+
+        ~ScopeExit() {
+            if (func_) {
+                func_();
+            }
+        }
+    private:
+        std::function<void()> func_;
+};
+
+#define _CONCAT(a, b) a##b
+#define _MAKE_SCOPE_(line)  ScopeExit _CONCAT(defer, line) = [&]()
+
+#undef SCOPE_GUARD
+#define SCOPE_GUARD _MAKE_SCOPE_(__LINE__)
+#endif
+```
+
+test
+
+```c++
+#include <iostream>
+#include "ScopeExit.h"
+using namespace std;
+
+void test() {
+    char *test = new char[100];
+    //std::ofstream ofs("test.txt");
+    SCOPE_GUARD {
+        delete[] test;
+        //ofs.close();
+    };
+    if (true) {
+        return;
+    }
+}
+
+int main() {
+    test();
+}
+```
+
+
+
+RAII 还有很多有趣的妙用，后续还会介绍，请持续关注。
+
+
+
+#### 如何写出优雅的C++ 代码
+
+工欲善其事必先利其器，优雅的代码离不开**静态代码检查工具**，大家可能平时使用较多的是 **cppcheck**，但今天我想跟大家分享另一个 静态代码检查工具 **clang-tidy**
+
+不同于 **cppcheck** 使用**正则表达式**进行静态代码分析，clang-tidy 是基于**语法分析树**的静态代码检查工具，虽然它的速度比正则表达 式慢一些，但是它检查的更准确、全面，而且不仅可以做静态检查，还可以做一些修复工作，自行添加一些自定义检查规则
+
+上代码：
+
+```c++
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 1.2;
+    return 0;
+}
+```
+
+
+
+这里有隐式类型转换，可以使用 **clang-tidy** 来检测
+
+还有没使用到的命名空间using namespace std;
+
+```sh
+7749 warnings generated.
+/root/cpp_/unix/program cpp/clang-tidy/test1.cpp:2:1: warning: do not use namespace using-directives; use using-declarations instead [google-build-using-namespace]
+using namespace std;
+^
+/root/cpp_/unix/program cpp/clang-tidy/test1.cpp:7:13: warning: implicit conversion from 'double' to 'int' changes value from 1.2 to 1 [clang-diagnostic-literal-conversion]
+    int a = 1.2;
+            ^
+Suppressed 7747 warnings (7747 in non-user code).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+```
+
+
+
+这里也许你有疑问了，这不就是一个普通的编译警告嘛，正常使用编译器也可以检查出来，那再看一段代码：
+
+```
+#include <iostream>
+using namespace std;
+
+int main() {
+    // int a = 1.2;
+    char *d = NULL;
+    return 0;
+}
+```
+
+我们都知道在 C++中应该更多的使用 nullptr 而不是 NULL，这里使用了 NULL 而不是使用 nullptr，可能我们在开发过程中没有注意 到这种用法，所以 **clang-tidy** 派上了用场
+
+```sh
+    char *d = NULL;
+              ^~~~~
+              nullptr
+Suppressed 7747 warnings (7747 in non-user code).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+```
+
+再举一个例子：
+
+```c++
+struct Base {
+    virtual void func() {}
+};
+
+struct Derive : Base {
+    virtual void func() {}
+};
+```
+
+```sh
+/root/cpp_/unix/program cpp/clang-tidy/test1.cpp:9:18: warning: prefer using 'override' or (rarely) 'final' instead of 'virtual' [hicpp-use-override]
+    virtual void func() {}
+    ~~~~~~~~~~~~~^
+                        override
+Suppressed 7747 warnings (7747 in non-user code).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well
+```
+
+这里可能我们乍一看没有任何问题，其实在 C++11 里派生类继承父类，重写了某些函数时最好加上 override 关键字，通过 clang-tidy 还是可以检测出来：
+
+该工具还可以检查代码是否符合编码规范，例如 Google 编码规范等，看这段头文件相关代码：\
+
+```c++
+#include <iostream>
+#include <string>
+#include <memory>
+```
+
+这里其实有一点点问题，头文件引用顺序不满足编码规范，这里其实 clang-format 都可以检测出来，但 clang-tidy 也可以检测出来， 通过`-fix`  还可以进行自动修复：
+
+```sh
+/root/cpp_/unix/program cpp/clang-tidy/test1.cpp:2:1: warning: #includes are not sorted properly [llvm-include-order]
+#include <string>
+^        ~~~~~~~~
+         <memory>
+```
+
+它还可以检测隐藏的内存泄漏：
+
+```c++
+1. int main() {
+2. 		char* ct = (char*)malloc(323);
+3. 		return 0;
+4. }
+```
+
+这是使用 clang-tidy 的检测结果：
+
+```sh
+/root/cpp_/unix/program cpp/clang-tidy/test1.cpp:2:1: warning: do not use namespace using-directives; use using-declarations instead [google-build-using-namespace]
+using namespace std;
+^
+/root/cpp_/unix/program cpp/clang-tidy/test1.cpp:15:5: warning: initializing non-owner 'char *' with a newly created 'gsl::owner<>' [cppcoreguidelines-owning-memory]
+    char* ct = (char *)malloc(323);
+    ^
+/root/cpp_/unix/program cpp/clang-tidy/test1.cpp:15:5: warning: use auto when initializing with a cast to avoid duplicating the type name [hicpp-use-auto]
+    char* ct = (char *)malloc(323);
+    ^~~~~
+    auto
+/root/cpp_/unix/program cpp/clang-tidy/test1.cpp:15:11: warning: Value stored to 'ct' during its initialization is never read [clang-analyzer-deadcode.DeadStores]
+```
+
+
+
+clang-tidy 还有很多高端功能，大概可以检测出 250 种问题，大体主要分为几大类
+
+- google：检测是否违反 google 编码规范
+-  performance：检测性能相关的问题
+-  modernize：检测是否使用现代 C++11 相关的代码问题
+- readability：检测与可读性相关，但又不属于某些编码规范的问题
+- boost：检测 boost 库的相关问题
+- android：检测 Android 相关问题
+- abseil：检测 abseil 库的相关问题
+- cpp-core-guidelines：检测是否违反 cpp-core-guideline
+
+而且适用于 Windows/Linux/MacOS 多平台，还支持命令行，CLion/VSCode/VSStudio 插件等，检测规则还可以定制，重要的是免 费开源，快去用起来吧，写出优雅的 C++代码
+
+
+
+
+
+##### vs code clang-tidy 扩展
+
+
+
+#### C++ 为什么引入几种类型转换
+
+众所周知 C++关于类型转换引入了四种方式：
+
+- **static_cast**
+- **const_cast**
+- **dynamic_cast**
+- **reinterpret_cast**
+
+
+
+1. 为什么要引入这几种类型转换，它与 C 语言中的强制类型转换有什么区别？
+2. 这四种类型转换分别应用在什么场景？
+
+
+
+我们都知道 C++完全兼容 C 语言，C 语言的转换方式很简单，可以在任意类型之间转换，但这也恰恰是缺点，因为极其不安全， 可能不经意间将指向 const 对象的指针转换成非 const 对象的指针，可能将基类对象指针转成了派生类对象的指针，这种转换很 容易出 bug，需要严格审查代码才能消除这种隐患，但是 C 这种转换方式不利于我们审查代码，且程序运行时也可能会出 bug。
+
+
+
+而 C++引入的这几种类型转换可以完美的解决上述问题，不同场景下不同需求使用不同的类型转换方式，同时有利于代码审查。
+
+下面详细介绍这四种类型转换的使用场景
+
+**static_cast**
+
+使用方式：
+
+```
+
+```
+
+**使用场景：**基本数据类型之间的转换使用，例如 float 转 int，int 转 char 等，在有类型指针和 void*之间转换使用，子类对象指针转 换成父类对象指针也可以使用 static_cast。
+
+非多态类型转换一般都使用 static_cast，而且最好把所有的隐式类型转换都是用 static_cast 进行显示替换，不能使用 static_cast 在 有类型指针之间进行类型转换
+
+
+
+**dynamic_cast**
+
+使用方式：
+
+```c++
+#include <iostream>
+using namespace std;
+struct Base {
+    virtual void Func() { cout << "Base Func \n"; }
+};
+struct Derive : public Base {
+    virtual void Func() { cout << "Derive Func \n"; }
+};
+
+
+int main() {
+    Derive d;
+    d.Func();
+    Base *b = dynamic_cast<Base *>(&d);
+    b->Func();
+    Derive *dd = dynamic_cast<Derive *>(b);
+    dd->Func();
+    return 0;
+}
+/*
+Derive Func 
+Derive Func 
+Derive Func
+*/
+```
+
+使用场景：用于将父类的指针或引用转换为子类的指针或引用，此场景下父类必须要有虚函数，因为 dynamic_cast 是运行时检查， 检查需要运行时信息 RTTI，而RTTI 存储在虚函数表中
+
+
+
+**const_cast**
+
+**使用方式：**
+
+```c++
+#include <iostream>
+using namespace std;
+
+int main() {
+    int data = 10;
+    const int *cpi = &data;
+    int *pi = const_cast<int *>(cpi);
+
+    const int* cpii = const_cast<const int *>(pi);
+    return 0;
+}
+```
+
+
+
+**使用场景：**用于常量指针或引用与非常量指针或引用之间的转换，只有 const_cast 才可以对常量进行操作，一般都是用它来去除常量 性，去除常量性是危险操作，还是要谨慎操作
+
+
+
+**reinterpret_cast**
+
+**使用方式：**
+
+```c++
+1. int main() {
+2. 		int data = 10;
+3. 		int *pi = &data;
+4. 
+5. 		float *fpi = reinterpret_cast<float *>(pi);
+6. 
+7. 		return 0;
+8. }
+```
+
+使用场景：没啥场景，类似 C 语言中的强制类型转换，什么都可以转，万不得已不要使用，一般前三种转换方式不能解决问题了使用 这种强制类型转换方式。
+
+
+
+
+
 
 
 
