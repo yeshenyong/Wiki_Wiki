@@ -7,6 +7,36 @@
 ```sh
 # 显示指定行号内容
 sed -n '100p' file.txt
+# 往指定行(首行)添加语句
+sed -i '1i\I am heading' filename
+sed -i 'col(i)\string' filename
+```
+
+
+
+### split
+
+该指令将大文件分割成较小的文件，在默认情况下将按照每1000行切割成一个小文件。
+
+```sh
+split [--help][--version][-<行数>][-b <字节>][-C <字节>][-l <行数>][要切割的文件][输出文件名]
+-l:按行切分, 如：-l 100 , 按100行切分
+-b:按字节切分,如：-b 100k,按100k切分
+-d:切分文件后缀为数字形式
+-a:可指定后缀位数, 如-a2即两位,如x00,x01, 还可指定文件前缀, 如-a2 yes,则yes01,yes02
+
+split -l 600000 -d -a 1 ogbl_collab/ogbl_collab_train_edge edge_;
+```
+
+
+
+example
+
+```sh
+$ split -6 README       #将README文件每六行分割成一个文件 
+$ ls                                #执行ls指令  
+#获得当前目录结构  
+README xaa xad xag xab xae xah xac xaf xai    
 ```
 
 
@@ -124,6 +154,8 @@ uniq 命令用于报告或忽略文件中的重复行，一般与sort命令结�
 
 
 
+
+
 ### pam_tally2
 
 **PAM身份验证安全配置实例**
@@ -159,7 +191,7 @@ https://www.cnblogs.com/klb561/p/9236360.html
 
 
 
-### 用户租操作
+### 用户组操作
 
 查看用户组
 
@@ -489,6 +521,180 @@ us: 用户进程执行时间(user time)
 
 
 
+### perf 命令
+
+碰到 CPU 使用率升高的问题，你可以借助 top、pidstat 等工具，确认引发 CPU 性能问题的来源；再使用 perf 等工具，排查出引起性能问题的具体函数。
+
+示例：https://blog.csdn.net/RJ0024/article/details/117551145
+
+#### perf stat
+
+> 用于在运行指令时，监测并分析其统计结果。虽然perf top也可以指定pid，但是必须先启动应用才能查看信息。perf stat能完整统计应用整个生命周期的信息。
+
+```sh
+perf stat ls
+-p：stat events on existing process id (comma separated list). 仅分析目标进程及其创建的线程。
+-a：system-wide collection from all CPUs. 从所有CPU上收集性能数据。
+-r：repeat command and print average + stddev (max: 100). 重复执行命令求平均。
+-C：Count only on the list of CPUs provided (comma separated list), 从指定CPU上收集性能数据。
+-v：be more verbose (show counter open errors, etc), 显示更多性能数据。
+-n：null run - don’t start any counters，只显示任务的执行时间 。
+-x SEP：指定输出列的分隔符。
+-o file：指定输出文件，–append指定追加模式。
+–pre ：执行目标程序前先执行的程序。
+–post ：执行目标程序后再执行的程序。
+```
+
+> Performance counter stats for 'ls':  
+>
+>          0.653782 task-clock                #    0.691 CPUs utilized            
+>                 0 context-switches          #    0.000 K/sec                    
+>                 0 CPU-migrations            #    0.000 K/sec                    
+>               247 page-faults               #    0.378 M/sec                    
+>         1,625,426 cycles                    #    2.486 GHz                      
+>         1,050,293 stalled-cycles-frontend   #   64.62% frontend cycles idle     
+>           838,781 stalled-cycles-backend    #   51.60% backend  cycles idle     
+>         1,055,735 instructions              #    0.65  insns per cycle          
+>                                             #    0.99  stalled cycles per insn  
+>           210,587 branches                  #  322.106 M/sec                    
+>            10,809 branch-misses             #    5.13% of all branches          
+>       
+>       0.000945883 seconds time elapsed 
+
+输出包括ls的执行时间，以及10个性能事件的统计。
+task-clock：任务真正占用的处理器时间，单位为ms。CPUs utilized = task-clock / time elapsed，CPU的占用率。
+
+context-switches：上下文的切换次数。
+
+CPU-migrations：处理器迁移次数。Linux为了维持多个处理器的负载均衡，在特定条件下会将某个任务从一个CPU
+
+迁移到另一个CPU。
+
+page-faults：缺页异常的次数。当应用程序请求的页面尚未建立、请求的页面不在内存中，或者请求的页面虽然在内
+
+存中，但物理地址和虚拟地址的映射关系尚未建立时，都会触发一次缺页异常。另外TLB不命中，页面访问权限不匹配
+
+等情况也会触发缺页异常。
+
+cycles：消耗的处理器周期数。如果把被ls使用的cpu cycles看成是一个处理器的，那么它的主频为2.486GHz。
+
+可以用cycles / task-clock算出。
+
+stalled-cycles-frontend：略过。
+
+stalled-cycles-backend：略过。
+
+instructions：执行了多少条指令。IPC为平均每个cpu cycle执行了多少条指令。
+
+branches：遇到的分支指令数。branch-misses是预测错误的分支指令数。
+
+```sh
+# perf stat -a -A ls > /dev/null
+```
+
+
+
+#### perf top 
+
+> perf top 是比较常用于展示占用CPU始终最多的函数或者指令，一般以此来查找热点函数。
+
+```sh
+root@xxxx:~# apt install linux-tools-common
+root@xxxx:~# perf top
+
+Samples: 6K of event 'cycles', 4000 Hz, Event count (approx.): 48144737 lost: 0/0 drop: 0/0
+Overhead  Shared Object                           Symbol
+   3.84%  [kernel]                                [k] native_write_msr
+   2.25%  [kernel]                                [k] update_blocked_averages
+   1.89%  [kernel]                                [k] update_sd_lb_stats.constprop.0
+   1.80%  [kernel]                                [k] pvclock_clocksource_read
+```
+
+> Samples : 采样数, perf 总共采集了 6K 个 CPU 时钟事件。
+>
+> event : 事件类型。
+>
+> Event count (approx.) : 事件总数量
+>
+> 行列:
+>
+> Overhead: 是该符号的性能事件在所有采样中的比例，用百分比来表示。
+>
+> Shared: Shared ，是该函数或指令所在的动态共享对象（Dynamic Shared Object），如内核、进程名、动态链接库名、内核模块名等。
+>
+> Object: Object ，是动态共享对象的类型。比如 [.] 表示用户空间的可执行程序、或者动态链接库，而 [k] 则表示内核空间。
+>
+> Symbol: Symbol 是符号名，也就是函数名。当函数名未知时，用十六进制的地址来表示。
+
+> ```
+> -e：指定性能事件
+> 
+> -a：显示在所有CPU上的性能统计信息
+> 
+> -C：显示在指定CPU上的性能统计信息
+> 
+> -p：指定进程PID
+> 
+> -t：指定线程TID
+> 
+> -K：隐藏内核统计信息
+> 
+> -U：隐藏用户空间的统计信息
+> 
+> -s：指定待解析的符号信息
+> ```
+
+
+
+
+
+> 碰到 CPU 使用率升高的问题，你可以借助 top、pidstat 等工具，确认引发 CPU 性能问题的来源；再使用 perf 等工具，排查出引起性能问题的具体函数。
+
+
+
+
+
+### htop 命令
+
+> 为什么比top 好？
+
+可以横向或纵向滚动浏览进程列表，以便看到所有的进程和完整的命令行。 
+
+在启动上比top 更快。 杀进程时不需要输入进程号。 htop 支持鼠标选中操作（反应不太快）。 
+
+top 已不再维护。
+
+```sh
+-C --no-color　　　　 　　 使用一个单色的配色方案 
+-d --delay=DELAY　　　　 设置延迟更新时间，单位秒 
+-h --help　　　　　　 　　 显示htop 命令帮助信息 
+-u --user=USERNAME　　 只显示一个给定的用户的过程 
+-p --pid=PID,PID…　　　 只显示给定的PIDs 
+-s --sort-key COLUMN　 依此列来排序 
+-v –version　　　　　　　 显示版本信息 
+交互式命令（INTERACTIVE COMMANDS） 
+上下键或PgUP, PgDn 选定想要的进程，左右键或Home, End 移动字段，当然也可以直接用鼠标选定进程； 
+Space 标记/取消标记一个进程。命令可以作用于多个进程，例如 "kill"，将应用于所有已标记的进程 
+U 取消标记所有进程 
+s 选择某一进程，按s:用strace追踪进程的系统调用 
+l 显示进程打开的文件: 如果安装了lsof，按此键可以显示进程所打开的文件 
+I 倒转排序顺序，如果排序是正序的，则反转成倒序的，反之亦然 
++, - When in tree view mode, expand or collapse subtree. When a subtree is collapsed a "+" sign shows to the left of the process name. 
+a (在有多处理器的机器上) 设置 CPU affinity: 标记一个进程允许使用哪些CPU 
+u 显示特定用户进程 
+M 按Memory 使用排序 
+P 按CPU 使用排序 
+T 按Time+ 使用排序 
+F 跟踪进程: 如果排序顺序引起选定的进程在列表上到处移动，让选定条跟随该进程。这对监视一个进程非常有用：通过这种方式，你可以让一个进程在屏幕上一直可见。使用方向键会停止该功能。 
+K 显示/隐藏内核线程 
+H 显示/隐藏用户线程 
+Ctrl-L 刷新 
+Numbers PID 查找: 
+输入PID，光标将移动到相应的进程上
+```
+
+
+
 
 
 ### ipcs 查询进程间通信状态
@@ -563,6 +769,104 @@ kernel.shmmni=4096
 #kernel.sem = <semmsl> <semmni>*<semmsl> <semopm> <semmni>
 kernel.sem = 250 32000 32 128
 ```
+
+
+
+### lsof 命令
+
+https://blog.csdn.net/MTbaby/article/details/52641206
+
+(list open file)
+
+**例2.**查看谁正在使用某个文件，也就是说查找某个文件相关的进程
+
+```sh
+root@iZwz9i5zftiq15tkzdk682Z:~/workflow_exp# lsof /bin/bash
+COMMAND   PID USER  FD   TYPE DEVICE SIZE/OFF   NODE NAME
+bash     3035 root txt    REG  252,1  1113504 917506 /bin/bash
+bash     3074 root txt    REG  252,1  1113504 917506 /bin/bash
+bash     3084 root txt    REG  252,1  1113504 917506 /bin/bash
+bash     3872 root txt    REG  252,1  1113504 917506 /bin/bash
+bash    10504 root txt    REG  252,1  1113504 917506 /bin/bash
+bash    19314 root txt    REG  252,1  1113504 917506 /bin/bash
+bash    26981 root txt    REG  252,1  1113504 917506 /bin/bash
+bash    27355 root txt    REG  252,1  1113504 917506 /bin/bash
+bash    28436 root txt    REG  252,1  1113504 917506 /bin/bash
+```
+
+**例3.**递归查看某个目录的文件信息
+
+```sh
+ [mt555@localhost Desktop]$ cd /opt/soft/
+ [mt555@localhost Desktop]$ lsof mt/33
+ COMMAND   PID USER   FD   TYPE DEVICE SIZE    NODE NAME
+ bash    24941 root  cwd    DIR    8,2 4096 2258872 mt2/33
+ vi      24976 root  cwd    DIR    8,2 4096 2258872 mt2/33
+ [mt555@localhost Desktop]$
+```
+
+**例4.**不使用+D选项，遍历查看某个目录的所有文件信息的方法
+
+```sh
+命令：lsof | grep ‘mt2/33’
+```
+
+**例5.**列出某个用户打开的文件信息
+
+```sh
+命令：lsof -u username
+```
+
+说明: -u 选项，u其实是user的缩写
+
+**例6**：列出某个程序进程所打开的文件信息
+
+```sh
+命令：lsof -c mysql
+```
+
+说明:-c 选项将会列出所有以mysql这个进程开头的程序的文件，其实你也可以写成 lsof | grep mysql, 但是第一种方法明显比第二种方法要少打几个字符了
+
+**例7**：列出多个进程多个打开的文件信息
+
+```sh
+命令：lsof -c mysql -c apache
+```
+
+...
+
+> - -a 列出打开文件存在的进程
+> - -c<进程名> 列出指定进程所打开的文件
+> - -g 列出GID号进程详情
+> - -d<文件号> 列出占用该文件号的进程
+> - +d<目录> 列出目录下被打开的文件
+> - +D<目录> 递归列出目录下被打开的文件
+> - -n<目录> 列出使用NFS的文件
+> - -i<条件> 列出符合条件的进程。（4、6、协议、:端口、 @ip ）
+> - -p<进程号> 列出指定进程号所打开的文件
+> - -u 列出UID号进程详情
+> - -h 显示帮助信息
+> - -v 显示版本信息
+
+> COMMAND：进程的名称
+>
+> PID：进程标识符
+>
+> PPID：父进程标识符（需要指定-R参数）
+>
+> USER：进程所有者
+>
+> PGID：进程所属组
+>
+> FD：文件描述符，应用程序通过文件描述符识别该文件。如cwd、txt等
+>
+> DEVICE：指定磁盘的名称
+>
+> SIZE：文件的大小
+>
+> NODE：索引节点（文件在磁盘上的标识）
+>
+> NAME：打开文件的确切名称
 
 
 
