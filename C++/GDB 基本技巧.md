@@ -87,5 +87,3 @@ echo "/root/test/core-%e-%p-%t" > /proc/sys/kernel/core_pattern
 
 
 
-
-

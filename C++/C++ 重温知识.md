@@ -2024,7 +2024,214 @@ int main() {
 
 
 
+#### Linux 内存泄漏检测
 
+```sh
+g++ -fsanitize=address -g test_leak.cc && ./a.out
+```
+
+
+
+ASan 是个很好的检测内存问题的工具，不需要配置环境，使用还方便，编译时只需要-fsanitize=address -g 就可以，运行程序时 候可以选择添加对应的 ASAN_OPTIONS 环境变量就可以检测出很多内存问题。它的错误信息也很有用，明确指出当前是什么类 型的内存错误，如：
+
+- detected memory leak
+- heap-buffer-overflow
+- stack-buffer-overflow
+- global-buffer-overflow
+- heap-use-after-free
+- initialization-order-fiasco
+
+具体可以看 google 的官方文档：https://github.com/google/sanitizers/wiki/AddressSanitizer
+
+
+
+#### erase-remove
+
+一个常见的编程任务是从集合`collection`中删除等于某个值或满足某个标准的所有元素。`C++`语言可以通过手写循环完成这个任务。但更好的办法是使用`C++`标准模板库中的算法来实现。
+
+`erase`用于从一个集合中删除一个元素，但是对于基于[数组](https://so.csdn.net/so/search?q=数组&spm=1001.2101.3001.7020)的容器，如`vector`，**存储在被删除元素后的所有元素都需要向前移动以避免集合中有一个空位（gap）,在同一容器中多次调用产生了大量移动元素的开销。**
+
+`algorithm`库提供了`remove`与`remove_if`算法。由于这些算法运行在两个前向[迭代器](https://so.csdn.net/so/search?q=迭代器&spm=1001.2101.3001.7020)确定的元素范围上，它们没有底层容器或集合的具体知识。这些算法并不从容器删除元素，而是把**不符合删除标准的元素搬移到容器的前部，并保持这些元素的相对次序**。 该算法一次通过数据范围即可实现该目标。
+
+由于没有元素被删除，因此容器尺寸保持不变。容器尾部的元素都是需要被删除的，但其状态未指定`unspecified state`。`remove`返回一个迭代器指向尾部这些需要用`erase`删除的元素的第一个。
+
+同样的事情（删除多个元素），用容器的方法erase会导致多次遍历这个容器，每一次遍历时，在被删除元素之后的所有元素都必须向前移动，其时间消耗远大于单次通过。
+
+##### 局限
+
+`erase–remove`惯用法不能用于返回`const_iterator` （例如：set）的容器。
+
+`std::remove`与`std::remove_if`不能保持被删除的元素（不像`std::partition, std::stable_partition`）。因此，`erase–remove`只能用于容器的元素是全值语义不会招致资源泄露。
+
+```c++
+// Use g++ -std=c++11 or clang++ -std=c++11 to compile.
+
+#include <algorithm>  // remove and remove_if
+#include <iostream>
+#include <vector>  // the general-purpose vector container
+
+bool IsOdd(int i) { return i & 1; }
+
+void Print(const std::vector<int>& vec) {
+  for (const auto& i : vec) {
+    std::cout << i << ' ';
+  }
+  std::cout << std::endl;
+}
+
+int main() {
+  // Initializes a vector that holds numbers from 0-9.
+  std::vector<int> v = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  Print(v);
+
+  // Removes all elements with the value 5.
+  v.erase(std::remove(v.begin(), v.end(), 5), v.end());
+  Print(v);
+
+  // Removes all odd numbers.
+  v.erase(std::remove_if(v.begin(), v.end(), IsOdd), v.end());
+  Print(v);
+}
+
+/*
+Output:
+0 1 2 3 4 5 6 7 8 9
+0 1 2 3 4 6 7 8 9
+0 2 4 6 8
+*/
+```
+
+
+
+#### gcc a.c 究竟经历了什么？
+
+一次 gcc 命令究竟经历了什么吗？
+
+先来看一段 C 语言示例源代码：
+
+```c++
+// test.cc
+#include <stdio.h>
+
+int main() {
+     printf("Hello \n");
+     return 0;
+} 
+```
+
+```sh
+gcc test.cc
+./a.out
+```
+
+
+
+
+
+我们平时都会使用 gcc 来编译程序，这一行简单的命令其实经历了很多复杂的过程：
+
+1. 预处理 
+2. 编译 
+3. 汇编 
+4. 链接
+
+首先使用 file 看一下 test.cc 文件类型：
+
+```sh
+$ file test.c
+test.cc: C source, UTF-8 Unicode text, with CRLF line terminators
+```
+
+我们接下来看看这每个过程都做了什么？
+
+预处理
+
+命令：
+
+```sh
+$ gcc -E test.cc -o test.i
+或者
+$ cpp test.cc -o test.i
+```
+
+再看下test.i的文件类型
+
+```sh
+$ file test.i
+test.i: C source, UTF-8 Unicode text
+```
+
+这里可以看出预处理后的文件和预处理前的文件类型是相同的，都是文本文件，也可以直接查看test.i的内容，里面代码较多，就不贴上来了。
+
+其实预处理主要操作有这几个:
+
+- 展开所有#define宏定义，进行文本替换
+- 删除程序中所有的注释
+- 处理所有的条件编译，#if、#ifdef、#elif等
+- 处理所有的#include指令，把这些头文件的内容都复制到引用的源文件中
+- 添加行号和文件名标识，方便编译器产生警告及调试信息
+- 保留所有的#pragma编译器指令，因为编译器会使用他们
+
+
+
+**编译**
+
+命令：
+
+```sh
+gcc -S test.cc -o test.s
+```
+
+再查看文件类型
+
+```sh
+$ file test.s
+test.s: assembler source, ASCII text
+```
+
+编译过程就是把预处理后的文件进行一系列操作生成相应的汇编文件：
+
+1. 词法分析：又称词法扫描，通过扫描器，利用有限状态机的算法将源码中的字符串分割成一系列记号，如加减乘除数字括号等。
+2. 语法分析：使用语法分析器对词法分析产生的记号运用上下文无关语法的手段进行语法分析，产生语法分析树。这期间如果表达式不合法（括号不匹配等），就会报错。
+3. 语义分析：语法分析检查表达式是否合法，语义分析检查表达式是否有意义，如浮点型整数赋值给指针，编译器就会报错。
+4. 中间语言生成：做一些语法树优化，如6+2=8。
+5. 目标代码生成及优化：将中间代码生成目标汇编代码。
+
+
+
+**汇编**
+
+命令：
+
+```sh
+$ gcc -c test.s -o test.o
+或
+$ as test.s -o test.o
+```
+
+查看文件类型：
+
+```sh
+$ file test.o
+testt.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
+```
+
+使用汇编器将汇编代码转成机器可以执行的指令，其实就是将汇编指令和机器指令按照对照表一一翻译。
+
+生成目标文件
+
+**链接**
+
+为什么汇编器不直接生成可执行文件而是生成一个目标文件呢，因为一个文件需要依赖其它好多个库，这些库的符号需要通过链接过程才可以互相配合生成一个可执行文件，需要经历地址和空间分配、符号决议、重定位等步骤，这块内容较多
+
+我们可以简单的通过 ldd 查看一下可执行程序需要依赖的库，这些库都需要在链接过 程中被链接才可以使用。
+
+```sh
+$ ldd a.out
+linux-vdso.so.1 (0x00007ffff5b4a000)
+libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fa1fc660000)
+/lib64/ld-linux-x86-64.so.2 (0x00007fa1fce00000)
+```
 
 
 
