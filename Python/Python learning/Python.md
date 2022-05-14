@@ -1737,6 +1737,20 @@ MRO（method resolution order）：方法解析顺序。
 
 
 
+### globals()
+
+globals 函数
+
+示例 6-7　内省模块的全局命名空间，构建 promos 列表
+
+```python
+promos = [globals()[name] for name in globals() ➊
+     if name.endswith('_promo') ➋
+     and name != 'best_promo'] ➌
+```
+
+
+
 ### super()
 
 通过super（）获得父类定义
@@ -2134,3 +2148,83 @@ __all__ = [
      - python setup.py install（安装到系统路径） / pythono setup.py install -prefix='url'（类似gcc）
   2. 暴力安装
      - 直接将要安装的包，以及模块，复制对应的系统路径
+
+
+
+
+
+### dis 模块
+
+python中的dis模块可以**查看一句python代码**的cpu运行轨迹，也就是**cpu指令**，
+如果只是读取数据时，如读取一个函数，此时数据是安全的，因为没有涉及任何修改，
+当改数据时，可能会涉及数据不安全，如多个线程同时修改一个数据，原因是一句代码对应了多条cpu指令，如有4条指令，当执行完第二条时，cpu时间片轮转了，此时数据可能发生错误。
+所以任何 += -= *- 都是数据不安全的
+
+```python
+import dis
+def func2():
+    a = 0
+    a + 1
+dis.dis(func2)
+```
+
+运行结果
+
+```sh
+  3           0 LOAD_CONST               1 (0)
+              2 STORE_FAST               0 (a)
+
+  4           4 LOAD_FAST                0 (a)
+              6 LOAD_CONST               2 (1)
+              8 BINARY_ADD
+             10 POP_TOP
+             12 LOAD_CONST               0 (None)
+             14 RETURN_VALUE
+```
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20190225175638700.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjIzMzYyOQ==,size_16,color_FFFFFF,t_70)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
