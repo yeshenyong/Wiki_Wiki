@@ -904,5 +904,8 @@ ps -ef | grep websrv
 sudo lsof -p 6346 # 使用 -p 选项指定进程号（lsof，list open file）
 # 查看所有内核参数
 sysctl -a
+# 切分行
+split -l 150000 -d -a 1 ogbl_collab/ogbl_collab_node node_;
+sed -i '1i\id:int64\tattr:string' node_1;
 ```
 
