@@ -2,9 +2,33 @@
 
 ### pip
 
+pip的全称是`Package installer for python`，顾名思义就是pip就是Python的包安装器。
+
+通过`pip`命令，可以把远端仓库（`Pypi`）里的包下载并安装到本地
+
 pip 是 Python 包管理工具，该工具提供了对Python 包的查找、下载、安装、卸载的功能。
 
 默认位置：<python安装目录>\lib\site-packages
+
+WHL文件是以Wheel格式保存的Python安装包，Wheel是Python发行版的标准内置包格式。WHL文件包含Python安装的所有文件和元数据，其中还包括所使用的Wheel版本和打包的规范
+
+```sh
+pip install MySQL_python-win32.whl
+```
+
+**指定版本号 安装**
+
+```sh
+pip install requests=2.27.1
+```
+
+**批量安装**
+
+```sh
+pip freeze > requirements.txt
+```
+
+![图片](https://mmbiz.qpic.cn/mmbiz_png/eySK9BEnBalZCwibYjgOUn7xJ4uOZcdQf28icYEI0Z61Cm75GVaCkUN4x4hhs76Q7u2kibNvyEPKkxoGXNnV9dOBg/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1)
 
 ### apt-get
 
