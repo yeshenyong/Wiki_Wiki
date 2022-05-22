@@ -1,5 +1,121 @@
 # Workflow 阅读笔记
 
+
+
+### workflow 安装
+
+```sh
+git clone https://github.com/sogou/workflow
+cd workflow
+make
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+cd tutorial
+make
+```
+
+编译指令
+
+```sh
+clang++ tutorial-01-wget.cc -std=c++2a -o a.out -lworkflow
+```
+
+
+
+任务序列
+
+### SeriesWork
+
+由（series）控制
+
+总之，如果你想在一个任务之后启动下一个任务，一般是使用push_back操作来完成（还有些情况可能要用到push_front）。
+而series_of()则是一个非常重要的调用，是一个不属于任何类的全局函数。其定义和实现在[Workflow.h](https://github.com/sogou/workflow/blob/master/src/factory/Workflow.h#L140)里：
+
+```c++
+static inline SeriesWork *series_of(const SubTask *task)
+{
+    return (SeriesWork *)task->get_pointer();
+}
+```
+
+任何task都是SubTask类型的派生。而任何运行中的task，一定属于某个series。通过series_of调用，得到了任务所在的series。
+而push_back是SeriesWork类的一个调用，其功能是将一个task放到series的末尾。类似调用还有push_front。本示例中，用哪个调用并没有区别。
+
+```c++
+class SeriesWork
+{
+    ...
+public:
+    void push_back(SubTask *task);
+    void push_front(SubTask *task);
+    ...
+}
+```
+
+SeriesWork类在我们整个体系中，扮演重要的角色。在下一个示例中，我们将展现SeriesWork更多的功能。
+
+​	之前两组示例中，我们直接调用task->start()启动第一个任务。task->start()操作实际的工作方法是，
+先创建一个以task为首任务的SeriesWork，再启动这个series。在[WFTask.h](https://github.com/sogou/workflow/blob/master/src/factory/WFTask.h)里，可以看到start的实现：
+
+```C++
+template<class REQ, class RESP>
+class WFNetWorkTask : public CommRequest
+{
+public:
+    void start()
+    {
+        assert(!series_of(this));
+        Workflow::start_series_work(this, nullptr);
+    }
+    ...
+};
+```
+
+​	我们想给series设置一个callback，并加入一些上下文。所以我们不使用任务的start接口，而是自己创建一个series。
+​	SeriesWork不能new，delete，也不能派生。只能通过Workflow::create_series_work()接口产生。在[Workflow.h](https://github.com/sogou/workflow/blob/master/src/factory/Workflow.h)中，
+通常是用这个调用：
+
+```c++
+using series_callback_t = std::function<void (const SeriesWork *)>;
+
+class Workflow
+{
+public:
+    static SeriesWork *create_series_work(SubTask *first, series_callback_t callback);
+};
+```
+
+在示例代码中，我们的用法是：
+
+```C++
+struct tutorial_series_context
+{
+    std::string http_url;
+    std::string redis_url;
+    size_t body_len;
+    bool success;
+};
+...
+struct tutorial_series_context context;
+...
+SeriesWork *series = Workflow::create_series_work(http_task, series_callback);
+series->set_context(&context);
+series->start();
+```
+
+​	之前的示例，我们用task里的void *user_data指针保存上下文信息。但这个示例中，我们把上文信息放在series里，
+这么做显然更合理一些，series是完整的任务链，所有任务都能得到并修改上下文。
+​	series的callback函数在series所有任务被执行完之后调用，在这里，我们简单的用一个lamda函数，打印运行结果并唤醒主线程。
+
+
+
+
+
+
+
 转载自：https://mp.weixin.qq.com/s/kt2baYRJJHl9PCvY3FCU-Q
 
 workflow的关于Task的架构图：
@@ -163,7 +279,12 @@ done()方法内会触发callback，然后delete this；
 
 
 
+### Redis 
 
+> 相信经常使用redis的人，对这个接口不会有什么疑问。但必须注意，我们的请求是禁止SELECT命令和AUTH命令的。
+> 因为用户每次请求并不能指定具体连接，SELECT之后下一次请求并不能保证在同一个连接上发起，那么这个命令对用户来讲没有任何意义。
+> 对数据库选择和密码的指定，请在redis URL里完成。并且，必须是每次请求的URL都带着这些信息。
+> 另外，我们的redis client是支持cluster模式的，可以自动处理MOVED和ASK回复并重定向。用户不能自己发送ASKING命令。
 
 
 
