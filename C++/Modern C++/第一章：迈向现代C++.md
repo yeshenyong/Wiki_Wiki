@@ -16,7 +16,7 @@ char *str = "hello world!"; // 将出现弃用警告
 
 - C++98 异常说明、unexpected_handler、set_unexpected() 等相关特性被弃用，应该使用 noexcept（ps：C++的异常机制不建议使用，得不偿失）
 - auto_ptr 被弃用，应使用 unique_ptr。
-- register 关键字被弃用，可以使用但不再具备任何实际含义
+- **register 关键字被弃用，可以使用但不再具备任何实际含义**
 -  bool 类型的 ++ 操作被弃用（PS：搞这些操作的程序员怕不是...）
 - 如果一个类有析构函数，为其生成拷贝构造函数和拷贝赋值运算符的特性被弃用了（C++ 手写的乐趣）
 - C 语言风格的类型转换被弃用（即在变量前使用 (convert_type)），应该使用 static_cast（正常类型转换）、 reinterpret_cast、const_cast（const转非const） 来进行类型转换
@@ -68,7 +68,7 @@ int add(int x, int y) {
 #include <functional>
 int main() {
     [out = std::ref(std::cout << "Result from C code: " << add(1, 2))](){
-    out.get() << ".\n";
+    	out.get() << ".\n";
     }();
 	return 0;
 }
