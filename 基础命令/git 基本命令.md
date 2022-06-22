@@ -154,6 +154,10 @@ git checkout -b dev origin/dev
 
 
 
+git push --set-upstream origin master
+
+
+
 #### git 合并两个分支代码
 
 分支切换
@@ -283,6 +287,18 @@ git commit --amend
 最终只会有一个提交，第二次提交将代替第一次提交结果。
 
  
+
+#### git  commit 多行注释
+
+如果想要用多行注释，可以使用如下写法：
+
+```bash
+git commit -m "测试多行注释" -m "工具类注释添加"
+```
+
+![img](https://img-blog.csdnimg.cn/20210225113634699.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2x3eDM1NjQ4MQ==,size_16,color_FFFFFF,t_70)
+
+
 
 #### git 分支查看和切换
 
@@ -528,7 +544,7 @@ error: Your local changes to 'c/environ.c' would be overwritten by merge.  Abort
 ```
 
 > 		这个提示意思就是说更新下来的内容和本地修改的内容有冲突，先提交你改变的内容或者先将你本地修改的内容暂时存起来。
->	
+>			
 > 	下面我们就分几步解决处理这个pull冲突问题.
 
 
