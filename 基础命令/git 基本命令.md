@@ -270,6 +270,24 @@ git push origin 本地分支:远程分支
 
 
 
+#### git commit 撤销
+
+1、仅仅撤销commit ,保留add
+
+```sh
+git reset --soft HEAD^
+
+//当我们执行 --soft 命令后，可以看到控制台无任何输出。它只是把HEAD指向了上一个版本。
+```
+
+2、仅仅撤销commit 并且也撤销add。(也就是删除工作空间的改动代码)
+
+```sh
+git reset --hard HEAD^
+```
+
+
+
 #### git commit 再补交add
 
 有时候，我们提交完成后发现漏掉几个文件没有添加，或者信息写错了，这时候就需要对操作进行撤销。
@@ -544,7 +562,7 @@ error: Your local changes to 'c/environ.c' would be overwritten by merge.  Abort
 ```
 
 > 		这个提示意思就是说更新下来的内容和本地修改的内容有冲突，先提交你改变的内容或者先将你本地修改的内容暂时存起来。
->			
+>				
 > 	下面我们就分几步解决处理这个pull冲突问题.
 
 
