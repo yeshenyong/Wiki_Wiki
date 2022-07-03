@@ -327,7 +327,7 @@ cat /etc/group
 
 ​	在运维的日常工作中，故障处理和问题诊断是个主要的内容，也是必备的技能。strace作为一种动态跟踪工具，能够帮助运维高效地定位进程和服务故障。它像是一个侦探，通过系统调用的蛛丝马迹，告诉你异常的真相。
 
-```
+```sh
 strace -tt -T -v -f -e trace=file -o /data/log/strace.log -s 1024 -p 23489
 ```
 
@@ -942,5 +942,9 @@ sysctl -a
 # 切分行
 split -l 150000 -d -a 1 ogbl_collab/ogbl_collab_node node_;
 sed -i '1i\id:int64\tattr:string' node_1;
+# 查找文件与删除
+find . -type f -name "*.txt" | xargs rm -f
+find . -type f -name "*.txt"
+find . -type f -name "*.txt" -exec rm {} \;
 ```
 

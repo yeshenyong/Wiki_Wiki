@@ -270,6 +270,16 @@ git push origin 本地分支:远程分支
 
 
 
+#### git add 撤销
+
+```sh
+git reset <file>` 或  `git reset
+```
+
+在旧版本的 Git 中，以上两个命令分别是 `git reset HEAD <file>` 和 `git reset HEAD`。Git 1.8.2 做了更新。
+
+
+
 #### git commit 撤销
 
 1、仅仅撤销commit ,保留add
@@ -562,7 +572,7 @@ error: Your local changes to 'c/environ.c' would be overwritten by merge.  Abort
 ```
 
 > 		这个提示意思就是说更新下来的内容和本地修改的内容有冲突，先提交你改变的内容或者先将你本地修改的内容暂时存起来。
->				
+>					
 > 	下面我们就分几步解决处理这个pull冲突问题.
 
 
