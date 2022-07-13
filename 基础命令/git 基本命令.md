@@ -298,6 +298,32 @@ git reset --hard HEAD^
 
 
 
+#### git commit 修改
+
+1、仅仅修改commit，保留add
+
+```sh
+git commit --amend
+```
+
+这时bash里会出现以下内容：
+
+![img](https://pic3.zhimg.com/80/v2-b2ab0be08ad6a72d151c5a0ef94ed646_720w.jpg)
+
+其中，*second commit* 是你上次提交的描述，下面是一下说明信息，有告诉你上次提交的文件信息等等，可忽略。接下来你要是想修改描述信息的话。直接键入：i，此时进入了输入模式，变成这样子：
+
+![img](https://pic2.zhimg.com/80/v2-c7756d0088e911ef843b5600365926bd_720w.jpg)
+
+可用键盘上下键转到描述所在的那一行，然后进行修改：
+
+![img](https://pic3.zhimg.com/80/v2-c5da05b7c480adeab60361e7c97c298e_720w.jpg)
+
+修改完成后，按下 Esc键退出编辑模式，在键入 :wq 回车退出并保存修改，完成提交。这是你再git log 看一下提交日志：
+
+![img](https://pic1.zhimg.com/80/v2-e622a7ece92566b273eb9b70f48547b8_720w.jpg)
+
+
+
 #### git commit 再补交add
 
 有时候，我们提交完成后发现漏掉几个文件没有添加，或者信息写错了，这时候就需要对操作进行撤销。
@@ -591,7 +617,7 @@ error: Your local changes to 'c/environ.c' would be overwritten by merge.  Abort
 ```
 
 > 		这个提示意思就是说更新下来的内容和本地修改的内容有冲突，先提交你改变的内容或者先将你本地修改的内容暂时存起来。
->							
+>								
 > 	下面我们就分几步解决处理这个pull冲突问题.
 
 
