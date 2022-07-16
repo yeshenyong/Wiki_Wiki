@@ -60,5 +60,54 @@ https://blog.csdn.net/weixin_44974875/article/details/123650726
 
 
 
+### 教训四：
 
+时间：2022/7/7
+
+记录时间：11:45
+
+耗时：20分钟
+
+主旨：在类中引用一个类，则强转不可以转成该类中成员
+
+![54a3e28187f5942e.png](https://i.bmp.ovh/imgs/2022/07/07/54a3e28187f5942e.png)
+
+错误版本
+
+```cpp
+#ifndef COROUTINE_CONTEXT_H
+#define COROUTINE_CONTEXT_H
+#include <cstddef>
+#include <cstring>
+#include <iterator>
+namespace stack_co {
+
+class Context final {
+public:
+	class Coroutine;
+    using Callback = void (*)(Coroutine *);
+};
+} // namespace stack_co
+
+#endif //COROUTINE_CONTEXT_H
+```
+
+正确版本
+
+```cpp
+#ifndef COROUTINE_CONTEXT_H
+#define COROUTINE_CONTEXT_H
+#include <cstddef>
+#include <cstring>
+#include <iterator>
+namespace stack_co {
+class Coroutine;	// diff
+class Context final {
+public:
+    using Callback = void (*)(Coroutine *);
+};
+} // namespace stack_co
+
+#endif //COROUTINE_CONTEXT_H
+```
 

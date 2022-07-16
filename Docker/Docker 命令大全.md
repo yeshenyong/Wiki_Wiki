@@ -6,7 +6,7 @@
 
 
 
-```
+```sh
 docker login 对应仓库
 ```
 
@@ -14,7 +14,7 @@ docker login 对应仓库
 
 #### 拉取镜像
 
-```
+```sh
 docker pull tensorflow/tensorflow:latest
 ```
 
@@ -148,18 +148,14 @@ docker run --net=host  -d -t --name tensorflow  tensorflow/tensorflow:latest
 
 ```python
 $ sudo docker run -t --rm -p 8501:8501 \
-    -v "$TESTDATA/saved_model_half_plus_two_cpu:/models/half_plus_two" \
+    -v "$TESTDATA/half_plus_two:/models/half_plus_two" \
     -e MODEL_NAME=half_plus_two \
     tensorflow/serving:1.12.0 &
 ```
 
-```python
-$  sudo docker run -p 8501:8501 --mount type=bind,\
-  source=/home/yeshenyong.ysy/program/serving/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_two_cpu,\
-target=/models/half_plus_two  -e MODEL_NAME=half_plus_two -t tensorflow/serving &
-```
 
-```
+
+```sh
 --mount：   表示要进行挂载
 -p:         指定主机到docker容器的端口映射.gRPC默认端口是8500，HTTP请求的默认端口是8501，
 source：    指定要运行部署的模型地址， 也就是挂载的源。这里制定的是下载的Demo的模型存储的地址，如果是自己训练的模型，目录指定此模型所在位置
@@ -168,21 +164,14 @@ target:     挂载的目标位置，将模型加载到哪里，也就是挂载�
 -e:  指定挂在的模型名称
 ```
 
-```bsh
-docker run -t --rm -p 8501:8501 \
-    -v "/home/yeshenyong.ysy/program/serving-master/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_two_cpu:/models/half_plus_two" \
-    -e MODEL_NAME=half_plus_two \
-    tensorflow/serving:1.12.0 &
-```
-
-```
+```sh
 docker run -t --rm -p 8502:8501 \
     -v "/disk5/modelName:/models/modelName" \
     -e MODEL_NAME=modelName \
     tensorflow/serving:1.12.0 &
 ```
 
-```
+```sh
 docker run -t --rm -p 8502:8501 \
     -v "/disk5/yeshenyong_job_dir/modelName:/models/modelName" \
     -e MODEL_NAME=modelName \
