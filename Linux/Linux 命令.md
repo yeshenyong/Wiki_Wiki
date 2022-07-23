@@ -772,6 +772,20 @@ kernel.sem = 250 32000 32 128
 
 
 
+### alias
+
+alias 设置对当前用户有效的方法
+
+只需一步，在 ~/.bashrc 末尾加入你的alias 命令即可，比如 
+
+```sh
+alias gs="git status" --color=auto
+```
+
+重新打开一个终端就行了
+
+
+
 ### lsof 命令
 
 https://blog.csdn.net/MTbaby/article/details/52641206
@@ -934,6 +948,8 @@ find . -name *.py | xargs wc -l
 ls /proc/pid/fd/
 # 文件查找指定字符串并显示下3行，并显示当前行号
 grep -r key=4250105673933320892 ha3_doc.* -A 3 -n
+# 文件查找指定字符串成，并记录有多少行
+grep -r "searchstr" doc.* | wc -l
 # 查看服务器打开的文件描述符
 ps -ef | grep websrv
 sudo lsof -p 6346 # 使用 -p 选项指定进程号（lsof，list open file）

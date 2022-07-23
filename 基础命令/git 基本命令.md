@@ -158,6 +158,14 @@ git push --set-upstream origin master
 
 
 
+#### git 重置用户信息
+
+git config user.name 'yeyeye'
+
+git config user.email 1010@qq.com
+
+
+
 #### git 合并两个分支代码
 
 分支切换
@@ -324,15 +332,23 @@ git commit --amend
 
 
 
+#### git commit 修改操作者信息
+
+```sh
+git commit --amend --reset-author
+```
+
+
+
 #### git commit 再补交add
 
 有时候，我们提交完成后发现漏掉几个文件没有添加，或者信息写错了，这时候就需要对操作进行撤销。
 
-```
+```sh
 git commit --amend
 ```
 
-```
+```sh
 git commit -m 'xxxxx'
 git add file
 git commit --amend
@@ -617,7 +633,7 @@ error: Your local changes to 'c/environ.c' would be overwritten by merge.  Abort
 ```
 
 > 		这个提示意思就是说更新下来的内容和本地修改的内容有冲突，先提交你改变的内容或者先将你本地修改的内容暂时存起来。
->								
+>									
 > 	下面我们就分几步解决处理这个pull冲突问题.
 
 
