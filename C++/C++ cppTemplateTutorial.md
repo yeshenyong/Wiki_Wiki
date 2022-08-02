@@ -1,5 +1,9 @@
 # cppTemplateTutorial
 
+读书笔记自：https://github.com/wuye9036/CppTemplateTutorial#0-%e5%89%8d%e8%a8%80
+
+> 把自己能做的事情做好
+
 ## 1. Template的基本语法
 
 ### 1.1 Template Class基本语法
@@ -398,19 +402,592 @@ template <float a> class E {}; // ERROR: 别闹！早说过只能是整数类型
 
 
 
+### 2.1 编程，元编程，模板元编程
+
+程序最根本的目的是什么？复现真实世界或人所构想的规律，减少重复工作的成本，或通过提升规模完成人所不能及之事。但是世间之事万千，有限的程序如何重现复杂的世界呢？
+
+答案是“抽象”。论及具体手段，无外乎“求同”与“存异”：概括一般规律，处理特殊情况。这也是软件工程所追求的目标。一般规律概括的越好，我们所付出的劳动也就越少。
 
 
 
+元（meta）无论在中文还是英文里，都是个很“抽象（abstract）”的词。因为它的本意就是“抽象”。元编程，也可以说就是“编程的抽象”。用更好理解的说法，元编程意味着你撰写一段程序A，程序A会运行后生成另外一个程序B，程序B才是真正实现功能的程序。那么这个时候程序A可以称作程序B的元程序，撰写程序A的过程，就称之为“元编程”。
 
 
 
+如果元编程中所有变化的量（或者说元编程的参数），都是类型，那么这样的编程，我们有个特定的称呼，叫“泛型”。
 
 
 
+### 2.2 模板世界的If-Then-Else：类模板的特化与偏特化
+
+#### 2.2.1 根据类型执行代码
+
+前一节的示例提出了一个要求：需要做出根据类型执行不同代码。要达成这一目的，模板并不是唯一的途径。比如之前我们所说的重载。如果把眼界放宽一些，虚函数也是根据类型执行代码的例子。此外，在C语言时代，也会有一些技法来达到这个目的，比如下面这个例子，我们需要对两个浮点做加法， 或者对两个整数做乘法：
+
+```c++
+struct Variant
+{
+    union
+    {
+        int x;
+        float y;
+    } data;
+    uint32 typeId;
+};
+
+Variant addFloatOrMulInt(Variant const* a, Variant const* b)
+{
+    Variant ret;
+    assert(a->typeId == b->typeId);
+    if (a->typeId == TYPE_INT)
+    {
+        ret.x = a->x * b->x;
+    }
+    else
+    {
+        ret.y = a->y + b->y;
+    }
+    return ret;
+}
+```
+
+更常见的是 `void*`:
+
+```c++
+#define BIN_OP(type, a, op, b, result) (*(type *)(result)) = (*(type const *)(a)) op (*(type const*)(b))
+void doDiv(void* out, void const* data0, void const* data1, DATA_TYPE type)
+{
+    if(type == TYPE_INT)
+    {
+        BIN_OP(int, data0, *, data1, out);
+    }
+    else
+    {
+        BIN_OP(float, data0, +, data1, out);
+    }
+}
+```
+
+在C++中比如在 `Boost.Any` 的实现中，运用了 `typeid` 来查询类型信息。和 `typeid` 同属于RTTI机制的 `dynamic_cast`，也经常会用来做类型判别的工作。我想你应该写过类似于下面的代码：
+
+```c++
+IAnimal* animal = GetAnimalFromSystem();
+
+IDog* maybeDog = dynamic_cast<IDog*>(animal);
+if(maybeDog)
+{
+    maybeDog->Wangwang();
+}
+ICat* maybeCat = dynamic_cast<ICat*>(animal);
+if(maybeCat)
+{
+    maybeCat->Moemoe();
+}
+```
+
+当然，在实际的工作中，我们建议把需要 `dynamic_cast` 后执行的代码，尽量变成虚函数。不过这个已经是另外一个问题了。我们看到，不管是哪种方法都很难避免 `if` 的存在。而且因为输入数据的类型是模糊的，经常需要强制地、没有任何检查的转换成某个类型，因此很容易出错。
+
+但是模板与这些方法最大的区别并不在这里。模板无论其参数或者是类型，它都是一个编译期分派的办法。编译期就能确定的东西既可以做类型检查，编译器也能进行优化，砍掉任何不必要的代码执行路径。例如在上例中，
+
+```c++
+template <typename T> T addFloatOrMulInt(T a, T b);
+
+// 迷之代码1：用于T是float的情况
+
+// 迷之代码2：用于T是int时的情况
+```
 
 
 
+#### 2.2.2 特化
 
+我的高中物理老师对我说过一句令我受用至今的话：把自己能做的事情做好。编写模板程序也是一样。当你试图用模板解决问题之前，先撇开那些复杂的语法要素，用最直观的方式表达你的需求：
+
+```cpp
+// 这里是伪代码，意思一下
+
+int|float addFloatOrMulInt(a, b)
+{
+    if(type is Int)
+    {
+        return a * b;
+    }
+    else if (type is Float)
+    {
+        return a + b;
+    }
+}
+
+void foo()
+{
+    float a, b, c;
+    c = addFloatOrMulInt(a, b);		// c = a + b;
+	
+    int x, y, z;
+    z = addFloatOrMulInt(x, y);		// z = x * y;
+}
+```
+
+因为这一节是讲类模板有关的特化和偏特化机制，所以我们不用普通的函数，而是用类的静态成员函数来做这个事情（这就是典型的没事找抽型）：
+
+```cpp
+// 这里仍然是伪代码，意思一下，too。
+class AddFloatOrMulInt
+{
+    static int|float Do(a, b)
+    {
+        if(type is Int)
+        {
+            return a * b;
+        }
+        else if (type is Float)
+	{
+	    return a + b;
+        }
+    }
+};
+
+void foo()
+{
+    float a, b, c;
+    c = AddFloatOrMulInt::Do(a, b); // c = a + b;
+	
+    int x, y, z;
+    z = AddFloatOrMulInt::Do(x, y); // z = x * y;
+}
+```
+
+好，意思表达清楚了。我们先从调用方的角度，把这个形式改写一下：
+
+```cpp
+void foo()
+{
+    float a, b, c;
+    c = AddFloatOrMulInt<float>::Do(a, b); // c = a + b;
+	
+    int x, y, z;
+    z = AddFloatOrMulInt<int>::Do(x, y); // z = x * y;
+}
+```
+
+也许你不明白为什么要改写成现在这个样子。看不懂不怪你，怪我讲得不好。但是你别急，先看看这样改写以后能不能跟我们的目标接近一点。如果我们把 `AddFloatOrMulInt<float>::Do` 看作一个普通的函数，那么我们可以写两个实现出来：
+
+```cpp
+float AddFloatOrMulInt<float>::Do(float a, float b)
+{
+    return a + b;
+}
+
+int AddFloatOrMulInt<int>::Do(int a, int b)
+{
+    return a * b;
+}
+
+void foo()
+{
+    float a, b, c;
+    c = AddFloatOrMulInt<float>::Do(a, b); // c = a + b;
+	
+    int x, y, z;
+    z = AddFloatOrMulInt<int>::Do(x, y); // z = x * y;
+}
+```
+
+这样是不是就很开心了？我们更进一步，把 `AddFloatOrMulInt<int>::Do` 换成合法的类模板：
+
+```cpp
+// 这个是给float用的。
+template <typename T> class AddFloatOrMulInt
+{
+    T Do(T a, T b)
+    {
+        return a + b;
+    }
+};
+
+// 这个是给int用的。
+template <typename T> class AddFloatOrMulInt
+{
+    T Do(T a, T b)
+    {
+        return a * b;
+    }
+};
+
+void foo()
+{
+    float a, b, c;
+
+    // 嗯，我们需要 c = a + b;
+    c = AddFloatOrMulInt<float>::Do(a, b);
+    // ... 觉得哪里不对劲 ...
+    // ...
+    // ...
+    // ...
+    // 啊！有两个AddFloatOrMulInt，class看起来一模一样，要怎么区分呢！
+}
+```
+
+好吧，问题来了！如何要让两个内容不同，但是模板参数形式相同的类进行区分呢？特化！特化（specialization）是根据一个或多个特殊的整数或类型，给出模板实例化时的一个指定内容。我们先来看特化是怎么应用到这个问题上的。
+
+```cpp
+// 首先，要写出模板的一般形式（原型）
+template <typename T> class AddFloatOrMulInt
+{
+    static T Do(T a, T b)
+    {
+        // 在这个例子里面一般形式里面是什么内容不重要，因为用不上
+        // 这里就随便给个0吧。
+        return T(0);
+    }
+};
+
+// 其次，我们要指定T是int时候的代码，这就是特化：
+template <> class AddFloatOrMulInt<int>
+{
+public:
+    static int Do(int a, int b) // 
+    {
+        return a * b;
+    }
+};
+
+// 再次，我们要指定T是float时候的代码：
+template <> class AddFloatOrMulInt<float>
+{
+public:
+    static float Do(float a, float b)
+    {
+        return a + b;
+    }
+};
+
+void foo()
+{
+    // 这里面就不写了
+}
+```
+
+我们再把特化的形式拿出来一瞧：这货有点怪啊： `template <> class AddFloatOrMulInt<int>`。别急，我给你解释一下。
+
+```cpp
+// 我们这个模板的基本形式是什么？
+template <typename T> class AddFloatOrMulInt;
+
+// 但是这个类，是给T是Int的时候用的，于是我们写作
+class AddFloatOrMulInt<int>;
+// 当然，这里编译是通不过的。
+
+// 但是它又不是个普通类，而是类模板的一个特化（特例）。
+// 所以前面要加模板关键字template，
+// 以及模板参数列表
+template </* 这里要填什么？ */> class AddFloatOrMulInt<int>;
+
+// 最后，模板参数列表里面填什么？因为原型的T已经被int取代了。所以这里就不能也不需要放任何额外的参数了。
+// 所以这里放空。
+template <> class AddFloatOrMulInt<int>
+{
+    // ... 针对Int的实现 ... 
+};
+
+// Bingo!
+```
+
+哈，这样就好了。我们来做一个练习。我们有一些类型，然后你要用模板做一个对照表，让类型对应上一个数字。我先来做一个示范：
+
+```cpp
+template <typename T> class TypeToID
+{
+public:
+    static int const ID = -1;
+};
+
+template <> class TypeToID<uint8_t>
+{
+public:
+    static int const ID = 0;
+};
+```
+
+然后呢，你的任务就是，要所有无符号的整数类型的特化（其实就是`uint8_t`到`uint64_t`啦），把所有的基本类型都赋予一个ID（当然是不一样的啦）。当你做完后呢，可以把类型所对应的ID打印出来，我仍然以 `uint8_t` 为例：
+
+```cpp
+void PrintID()
+{
+    cout << "ID of uint8_t: " << TypeToID<uint8_t>::ID << endl;
+}
+```
+
+嗯，看起来挺简单的，是吧。但是这里透露出了一个非常重要的信号，我希望你已经能察觉出来了： `TypeToID` 如同是一个函数。这个函数只能在编译期间执行。它输入一个类型，输出一个ID。
+
+如果你体味到了这一点，那么恭喜你，你的模板元编程已经开悟了。
+
+
+
+#### 2.2.3 特化：一些其它问题
+
+在上一节结束之后，你一定做了许多的练习。我们再来做三个练习。第一，给`float`一个ID；第二，给`void*`一个ID；第三，给任意类型的指针一个ID。先来做第一个:
+
+```cpp
+// ...
+// TypeToID 的模板“原型”
+// ...
+
+template <> class TypeToID<float>
+{
+public:
+    static int const ID = 0xF10A7;
+};
+```
+
+嗯， 这个你已经了然于心了。那么`void*`呢？你想了想，这已经是一个复合类型了。不错你还是战战兢兢地写了下来：
+
+```cpp
+template <> class TypeToID<void*>
+{
+public:
+    static int const ID = 0x401d;
+};
+
+void PrintID()
+{
+    cout << "ID of uint8_t: " << TypeToID<void*>::ID << endl;
+}
+```
+
+遍译运行一下，对了。模板不过如此嘛。然后你觉得自己已经完全掌握了，并试图将所有C++类型都放到模板里面，开始了自我折磨的过程：
+
+```cpp
+class ClassB {};
+
+template <> class TypeToID<void ()>;      // 函数的TypeID
+template <> class TypeToID<int[3]>;       // 数组的TypeID
+template <> class TypeToID<int (int[3])>; // 这是以数组为参数的函数的TypeID
+template <> class TypeToID<int (ClassB::*[3])(void*, float[2])>; // 我也不知道这是什么了，自己看着办吧。
+```
+
+甚至连 `const` 和 `volatile` 都能装进去：
+
+```cpp
+template <> class TypeToID<int const * volatile * const volatile>;
+```
+
+此时就很明白了，只要 `<>` 内填进去的是一个C++能解析的合法类型，模板都能让你特化。不过这个时候如果你一点都没有写错的话， `PrintID` 中只打印了我们提供了特化的类型的ID。那如果我们没有为之提供特化的类型呢？比如说double？OK，实践出真知，我们来尝试着运行一下：
+
+```cpp
+void PrintID()
+{
+    cout << "ID of double: " << TypeToID<double>::ID << endl;
+}
+```
+
+嗯，它输出的是-1。我们顺藤摸瓜会看到， `TypeToID`的类模板“原型”的ID是值就是-1。通过这个例子可以知道，当模板实例化时提供的模板参数不能匹配到任何的特化形式的时候，它就会去匹配类模板的“原型”形式。
+
+不过这里有一个问题要理清一下。和继承不同，类模板的“原型”和它的特化类在实现上是没有关系的，并不是在类模板中写了 `ID` 这个Member，那所有的特化就必须要加入 `ID` 这个Member，或者特化就自动有了这个成员。完全没这回事。我们把类模板改成以下形式，或许能看的更清楚一点：
+
+```cpp
+template <typename T> class TypeToID
+{
+public:
+    static int const NotID = -2;
+};
+
+template <> class TypeToID<float>
+{
+public:
+    static int const ID = 1;
+};
+
+void PrintID()
+{
+    cout << "ID of float: " << TypeToID<float>::ID << endl;       // Print "1"
+    cout << "NotID of float: " << TypeToID<float>::NotID << endl; // Error! TypeToID<float>使用的特化的类，这个类的实现没有NotID这个成员。
+    cout << "ID of double: " << TypeToID<double>::ID << endl;     // Error! TypeToID<double>是由模板类实例化出来的，它只有NotID，没有ID这个成员。
+}
+```
+
+这样就明白了。类模板和类模板的特化的作用，仅仅是指导编译器选择哪个编译，但是特化之间、特化和它原型的类模板之间，是分别独立实现的。所以如果多个特化、或者特化和对应的类模板有着类似的内容，很不好意思，你得写上若干遍了。
+
+第三个问题，是写一个模板匹配任意类型的指针。对于C语言来说，因为没有泛型的概念，因此它提供了无类型的指针`void*`。它的优点是，所有指针都能转换成它。它的缺点是，一旦转换称它后，你就再也不知道这个指针到底是指向`float`或者是`int`或者是`struct`了。
+
+比如说`copy`。
+
+```cpp
+void copy(void* dst, void const* src, size_t elemSize, size_t elemCount, void (*copyElem)(void* dstElem, void const* srcElem))
+{
+    void const* reader = src;
+    void const* writer = dst;
+    for(size_t i = 0; i < elemCount; ++i)
+    {
+        copyElem(writer, reader);
+        advancePointer(reader, elemSize); // 把Reader指针往后移动一些字节
+        advancePointer(writer, elemSize);
+     }
+}
+```
+
+为什么要提供copyElem，是因为可能有些struct需要深拷贝，所以得用特殊的copy函数。这个在C++98/03里面就体现为拷贝构造和赋值函数。
+
+但是不管怎么搞，因为这个函数的参数只是`void*`而已，当你使用了错误的elemSize，或者传入了错误的copyElem，就必须要到运行的时候才有可能看出来。注意，这还只是有可能而已。
+
+那么C++有了模板后，能否既能匹配任意类型的指针，同时又保留了类型信息呢？答案是显然的。至于怎么写，那就得充分发挥你的直觉了：
+
+首先，我们需要一个`typename T`来指代“任意类型”这四个字：
+
+```cpp
+template <typename T>
+```
+
+接下来，我们要写函数原型：
+
+```cpp
+void copy(?? dest, ?? src, size_t elemCount);
+```
+
+这里的 `??` 要怎么写呢？既然我们有了模板类型参数T，那我们不如就按照经验，写 `T*` 看看。
+
+```cpp
+template <typename T>
+void copy(T* dst, T const* src, size_t elemCount);
+```
+
+编译一下，咦，居然通过了。看来这里的语法与我们以前学到的知识并没有什么不同。这也是语言设计最重要的一点原则：一致性。它可以让你辛辛苦苦体验到的规律不至于白费。
+
+最后就是实现：
+
+```cpp
+template <typename T>
+void copy(T* dst, T const* src, size_t elemCount)
+{
+    for(size_t i = 0; i < elemCount; ++i)
+    {
+        dst[i] = src[i];
+    }
+}
+```
+
+是不是简洁了许多？你不需要再传入size；只要你有正确的赋值函数，也不需要提供定制的copy；也不用担心dst和src的类型不匹配了。
+
+最后，我们把函数模板学到的东西，也应用到类模板里面：
+
+```cpp
+template <typename T> // 嗯，需要一个T
+class TypeToID<T*> // 我要对所有的指针类型特化，所以这里就写T*
+{
+public:
+    static int const ID = 0x80000000;	// 用最高位表示它是一个指针
+};
+```
+
+最后写个例子来测试一下，看看我们的 `T*` 能不能搞定 `float*`：
+
+```cpp
+void PrintID()
+{
+    cout << "ID of float*: " << TypeToID<float*>::ID << endl;
+}
+```
+
+哈哈，大功告成。嗯，别急着高兴。待我问一个问题：你知道 `TypeToID<float*>` 后，这里的T是什么吗？换句话说，你知道下面这段代码打印的是什么吗？
+
+```cpp
+// ...
+// TypeToID 的其他代码，略过不表
+// ...
+
+template <typename T> // 嗯，需要一个T
+class TypeToID<T*> // 我要对所有的指针类型特化，所以这里就写T*
+{
+public:
+    typedef T		 SameAsT;
+    static int const ID = 0x80000000; // 用最高位表示它是一个指针
+};
+
+void PrintID()
+{
+    cout << "ID of float*: " << TypeToID< TypeToID<float*>::SameAsT >::ID << endl;
+}
+```
+
+别急着运行，你先猜。
+
+------------------------- 这里是给勤于思考的码猴的分割线 -------------------------------
+
+OK，猜出来了吗，T是`float`。为什么呢？因为你用 `float *` 匹配了 `T *`，所以 `T` 就对应 `float` 了。没想清楚的自己再多体会一下。
+
+嗯，所以实际上，我们可以利用这个特性做一件事情：把指针类型的那个指针给“干掉”：
+
+```cpp
+template <typename T>
+class RemovePointer
+{
+public:
+    typedef T Result;  // 如果放进来的不是一个指针，那么它就是我们要的结果。
+};
+
+template <typename T>
+class RemovePointer<T*>	// 祖传牛皮藓，专治各类指针
+{
+public:
+    typedef T Result;  // 正如我们刚刚讲的，去掉一层指针，把 T* 这里的 T 取出来。
+};
+
+void Foo()
+{
+    RemovePointer<float*>::Result x = 5.0f; // 喏，用RemovePointer后，那个Result就是把float*的指针处理掉以后的结果：float啦。
+    std::cout << x << std::endl;
+}
+```
+
+当然啦，这里我们实现的不算是真正的 `RemovePointer`，因为我们只去掉了一层指针。而如果传进来的是类似 `RemovePointer<int**>` 这样的东西呢？是的没错，去掉一层之后还是一个指针。`RemovePointer<int**>::Result` 应该是一个 `int*`，要怎么才能实现我们想要的呢？聪明的你一定能想到：只要像剥洋葱一样，一层一层一层地剥开，不就好了吗！相应地我们应该怎么实现呢？可以把 `RemovePointer` 的特化版本改成这样（当然如果有一些不明白的地方你可以暂时跳过，接着往下看，很快就会明白的）：
+
+```cpp
+template <typename T>
+class RemovePointer<T*>
+{
+public:
+    // 如果是传进来的是一个指针，我们就剥夺一层，直到指针形式不存在为止。
+    // 例如 RemovePointer<int**>，Result 是 RemovePointer<int*>::Result，
+    // 而 RemovePointer<int*>::Result 又是 int，最终就变成了我们想要的 int，其它也是类似。
+    typedef typename RemovePointer<T>::Result Result;
+};
+```
+
+是的没错，这便是我们想要的 `RemovePointer` 的样子。类似的你还可以试着实现 `RemoveConst`, `AddPointer` 之类的东西。
+
+OK，回到我们之前的话题，如果这个时候，我需要给 `int*` 提供一个更加特殊的特化，那么我还得多提供一个：
+
+```cpp
+// ...
+// TypeToID 的其他代码，略过不表
+// ...
+
+template <typename T> // 嗯，需要一个T
+class TypeToID<T*>    // 我要对所有的指针类型特化，所以这里就写T*
+{
+public:
+    typedef T SameAsT;
+    static int const ID = 0x80000000; // 用最高位表示它是一个指针
+};
+
+template <> // 嗯，int* 已经是个具体的不能再具体的类型了，所以模板不需要额外的类型参数了
+class TypeToID<int*> // 嗯，对int*的特化。在这里呢，要把int*整体看作一个类型
+{
+public:
+    static int const ID = 0x12345678; // 给一个缺心眼的ID
+};
+
+void PrintID()
+{
+    cout << "ID of int*: " << TypeToID<int*>::ID << endl;
+}
+```
+
+嗯，这个时候它会输出0x12345678的十进制（大概？）。 可能会有较真的人说，`int*` 去匹配 `T` 或者 `T*`，也是合法的。就和你说22岁以上能结婚，那24岁当然也能结婚一样。 那为什么 `int*` 就会找 `int*`，`float *`因为没有合适的特化就去找 `T*`，更一般的就去找 `T` 呢？废话，有专门为你准备的东西你不用，非要自己找事？这就是直觉。 但是呢，直觉对付更加复杂的问题还是没用的（也不是没用，主要是你没这个直觉了）。我们要把这个直觉，转换成合理的规则——即模板的匹配规则。 当然，这个匹配规则是对复杂问题用的，所以我们会到实在一眼看不出来的时候才会动用它。一开始我们只要把握：**模板是从最特殊到最一般形式进行匹配的** 就可以了。
+
+### 2.3 即用即推导
+
+#### 2.3.1 视若无睹的语法错误
 
 
 
