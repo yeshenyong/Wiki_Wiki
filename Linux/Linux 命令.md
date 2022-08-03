@@ -521,6 +521,18 @@ us: 用户进程执行时间(user time)
 
 
 
+### free 命令
+
+free 命令看mem 内存use、free
+
+```sh
+free -m -s -h 5
+```
+
+每5秒更新，并显示单位
+
+
+
 ### perf 命令
 
 碰到 CPU 使用率升高的问题，你可以借助 top、pidstat 等工具，确认引发 CPU 性能问题的来源；再使用 perf 等工具，排查出引起性能问题的具体函数。
@@ -904,6 +916,8 @@ $ ls | grep ^ScreenScreenshot from 01-24 19-35-05.png
 
 
 
+## C++ 相关
+
 ### ar 命令
 
 ar命令可以用来创建、查询、修改库。库是一单独的文件，里面包含了按照特定的结构组织起来的源文件。原始文件的内容、模式、时间戳、属主、组等属性都保留在库文件中
@@ -936,6 +950,27 @@ ar命令可以用来创建、查询、修改库。库是一单独的文件，里
 `ar –rc test.a test.o`表示将.o打包到库文件中
 
 
+
+### objdump
+
+objdump（反汇编应用程序、目标文件） 
+
+```sh
+objdump -d main.o（反汇编应用程序）
+objdump -f main.o （显示文件头信息）
+objdump -s -j .comment main.o（显示指定section 段信息（comment 段）
+```
+
+
+
+### ldd
+
+ldd （list dynamic dependencies）列出动态库依赖关系，列出一个程序所需要动态库（so） a. 
+
+```sh
+which ldd b. 
+ldd *.so
+```
 
 
 
