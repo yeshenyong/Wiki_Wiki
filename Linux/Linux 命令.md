@@ -997,5 +997,11 @@ sed -i '1i\id:int64\tattr:string' node_1;
 find . -type f -name "*.txt" | xargs rm -f
 find . -type f -name "*.txt"
 find . -type f -name "*.txt" -exec rm {} \;
+
+# 批量运行.sh
+find xxx -name BUILD | xargs bash gen_makefile.sh
+
+# Just Find
+find xxx -name dir | xargs ls -lrt
 ```
 
