@@ -405,6 +405,12 @@ git checkout 分支名
 
 
 
+#### git 删除本地分支
+
+```sh
+git branch -d <BranchName>
+```
+
 
 
 #### git 查看日志
@@ -633,7 +639,7 @@ error: Your local changes to 'c/environ.c' would be overwritten by merge.  Abort
 ```
 
 > 		这个提示意思就是说更新下来的内容和本地修改的内容有冲突，先提交你改变的内容或者先将你本地修改的内容暂时存起来。
->									
+>										
 > 	下面我们就分几步解决处理这个pull冲突问题.
 
 

@@ -319,6 +319,18 @@ cat /etc/group
 
 
 
+### chown
+
+修改文件用户所属
+
+```sh
+sudo chown -R yeshenyong:users ./dir
+```
+
+
+
+
+
 ### strace 命令
 
 ​	strace官网的描述, strace是一个可用于诊断、调试和教学的[Linux](https://so.csdn.net/so/search?from=pc_blog_highlight&q=Linux)用户空间跟踪器。我们用它来**监控用户空间进程和内核的交互**，比如系统调用、信号传递、进程状态变更等（比如你要查看epoll 是否有mmap调用）
