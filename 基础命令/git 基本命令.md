@@ -436,7 +436,8 @@ git fetch	将远程主机的最新内容拉到本地
 
 
 ```sh
-git branch -a		//显示所有分支
+git branch -a		//显示本地分支
+git branch -r		//显示远程分支, 如果想要看全部, 要提前 git fetch
 ```
 
 
@@ -639,7 +640,7 @@ error: Your local changes to 'c/environ.c' would be overwritten by merge.  Abort
 ```
 
 > 		这个提示意思就是说更新下来的内容和本地修改的内容有冲突，先提交你改变的内容或者先将你本地修改的内容暂时存起来。
->										
+>											
 > 	下面我们就分几步解决处理这个pull冲突问题.
 
 
