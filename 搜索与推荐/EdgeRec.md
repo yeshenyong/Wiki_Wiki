@@ -2,6 +2,8 @@
 
 转载自：https://mp.weixin.qq.com/s/dz8rklSVEXzdUV8ArTtp6Q
 
+TensorFlow Lite
+
 部分成果及技术细节发表在`CIKM-2020`
 
 - 端上重排系统
