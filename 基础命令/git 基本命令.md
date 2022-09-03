@@ -631,6 +631,16 @@ git push
 
 反做成功！
 
+#### git 版本回退
+
+git 远程仓库版本回退
+
+```sh
+git log
+git reset commit-id
+git push -f -u origin remote-branch
+```
+
 
 
 #### git pull 冲突解决
