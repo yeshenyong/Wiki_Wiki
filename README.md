@@ -15,6 +15,9 @@
 > 日拱一卒 功不唐捐
 >
 > 路走对了，就不怕远
+>
+> Anything worth doing is worth doing right.
+> 值得做的事就要把它做好。
 
 
 
