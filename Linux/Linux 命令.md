@@ -582,7 +582,7 @@ perf stat ls
 >                                             #    0.99  stalled cycles per insn  
 >           210,587 branches                  #  322.106 M/sec                    
 >            10,809 branch-misses             #    5.13% of all branches          
->       
+>    
 >       0.000945883 seconds time elapsed 
 
 输出包括ls的执行时间，以及10个性能事件的统计。
@@ -997,6 +997,11 @@ ls /proc/pid/fd/
 grep -r key=4250105673933320892 ha3_doc.* -A 3 -n
 # 文件查找指定字符串成，并记录有多少行
 grep -r "searchstr" doc.* | wc -l
+
+# 查找log 字段的每一行计算下来平均值
+cat test.log | grep "GameServer_r: " | awk '{sum+=$2} END {print "Avg = ", sum/NR}'
+cat test.log | grep "GameServer_r: " | awk -F 'GameServer_r: ' '{sum += $2}; END {printf "%0.3f\n", sum/NR}'
+
 # 查看服务器打开的文件描述符
 ps -ef | grep websrv
 sudo lsof -p 6346 # 使用 -p 选项指定进程号（lsof，list open file）

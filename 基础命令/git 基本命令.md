@@ -405,6 +405,24 @@ git checkout 分支名
 
 
 
+#### git基于远程分支创建本地分支
+
+查看本地分支与远程分支的对应关系
+
+```sh
+git branch -vv //查看设置的所有跟踪分支，可以使用 git branch 的 -vv 选项。 这会将所有的本地分支列出来并且包含更多的信息，如每一个分支正在跟踪哪个远程分支与本地分支是否是领先、落后或是都有。
+git branch -v -a  //显示当前使用仓库的所有分支
+git remote show origin // 查看本地分支与远程分支的对应关系
+```
+
+如果远程新建了一个分支，本地没有该分支，可以用
+
+```sh
+git checkout --track origin/branch_name
+```
+
+
+
 #### git 删除本地分支
 
 ```sh
