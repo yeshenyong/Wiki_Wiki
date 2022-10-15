@@ -329,6 +329,25 @@ sudo chown -R yeshenyong:users ./dir
 
 
 
+### nohup
+
+英文全称 no hang up（不挂起），用于在系统后台不挂断地运行命令，退出终端不会影响程序的运行
+
+**nohup** 命令，在默认情况下（非重定向时），会输出一个名叫 nohup.out 的文件到当前目录下，如果当前目录的 nohup.out 文件不可写，输出重定向到 **$HOME/nohup.out** 文件中
+
+以下命令在后台执行 root 目录下的 runoob.sh 脚本：
+
+```sh
+nohup /root/runoob.sh &
+# 在终端如果看到以下输出说明运行成功：
+# appending output to nohup.out
+
+# 这时我们打开 root 目录 可以看到生成了 nohup.out 文件。
+
+# 如果要停止运行，你需要使用以下命令查找到 nohup 运行脚本到 PID，然后使用 kill 命令来删除：
+ps -aux | grep "runoob.sh" 
+```
+
 
 
 ### strace 命令
@@ -804,6 +823,8 @@ alias 设置对当前用户有效的方法
 
 ```sh
 alias gs="git status" --color=auto
+alisa lk='ls -lh
+source ~/.bashrc
 ```
 
 重新打开一个终端就行了
@@ -983,6 +1004,13 @@ ldd （list dynamic dependencies）列出动态库依赖关系，列出一个程
 which ldd b. 
 ldd *.so
 ```
+
+```sh
+# 动态库查询路径优先级
+LD_PRELOAD>LD_LIBRARY_PATH>/etc/ld.so.cache>/lib>/usr/lib
+```
+
+
 
 
 
