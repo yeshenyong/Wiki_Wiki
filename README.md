@@ -16,6 +16,8 @@
 >
 > 花有重开日 人无再少年
 >
+> 你的人生随时还有余地
+>
 > Anything worth doing is worth doing right.
 > 值得做的事就要把它做好。
 
