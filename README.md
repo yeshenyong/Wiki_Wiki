@@ -20,6 +20,8 @@
 >
 > Anything worth doing is worth doing right.
 > 值得做的事就要把它做好。
+>
+> if you love it, go it
 
 
 
