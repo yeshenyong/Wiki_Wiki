@@ -10,6 +10,8 @@ sed -n '100p' file.txt
 # 往指定行(首行)添加语句
 sed -i '1i\I am heading' filename
 sed -i 'col(i)\string' filename
+# 将200 ~ 300行的数据摘出来
+sed -n "200, 300p" node_table_4 > output
 ```
 
 
@@ -1048,5 +1050,8 @@ find xxx -name BUILD | xargs bash gen_makefile.sh
 
 # Just Find
 find xxx -name dir | xargs ls -lrt
+
+# 将200 ~ 300行的数据摘出来
+sed -n "200, 300p" node_table_4 > output
 ```
 
