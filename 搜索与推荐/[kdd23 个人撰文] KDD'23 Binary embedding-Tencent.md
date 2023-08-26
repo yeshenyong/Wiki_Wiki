@@ -1,0 +1,1 @@
+[KDD'23 | Tencent：二值化向量检索 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/652431207?)

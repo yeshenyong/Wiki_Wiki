@@ -16,12 +16,11 @@
 >
 > 花有重开日 人无再少年
 >
-> 你的人生随时还有余地
+> 凡我不能创造的，我就不能理解
 >
-> Anything worth doing is worth doing right.
-> 值得做的事就要把它做好。
->
-> if you love it, go it
+> 少即是多，慢即是快
+> 
+>程序员将成为自己最后的掘墓人，chatGPT之后码农命运的齿轮开始反转
 
 
 
