@@ -1,0 +1,1 @@
+[大模型RAG检索增强问答如何评估：噪声、拒答、反事实、信息整合四大能力评测任务探索 (qq.com)](https://mp.weixin.qq.com/s/YFji1s2yT8MTrO3z9_aI_w)
