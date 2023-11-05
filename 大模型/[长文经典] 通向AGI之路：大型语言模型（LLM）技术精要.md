@@ -1,0 +1,1 @@
+[通向AGI之路：大型语言模型（LLM）技术精要 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/597586623)
