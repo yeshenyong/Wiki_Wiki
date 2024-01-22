@@ -1,0 +1,1 @@
+[再思考双塔 Embedding-based Retrieval 工业界比对——（样本） - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/678967073)
