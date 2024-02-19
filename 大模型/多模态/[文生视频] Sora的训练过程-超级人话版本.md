@@ -1,0 +1,1 @@
+[Sora的训练过程-超级人话版 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/682450509)
